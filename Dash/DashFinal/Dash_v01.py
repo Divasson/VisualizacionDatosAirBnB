@@ -8,38 +8,36 @@ import dash_html_components as html
 from dash.dependencies import Input, Output, State
 import logging
 from plotly.subplots import make_subplots
+import sys
 
-# Para este Dash, vamos a seleccionar un fichero de datos y realizar un dashboard descriptivo
-# sobre un conjunto de datos
+import importlib.machinery
+import importlib.util
+from pathlib import Path
 
-df = pd.read_csv("../../Datos/StudentsPerformance.csv")
+# Get path to mymodule. Credits to = https://csatlas.com/python-import-file-module/
+script_dir = Path( __file__ ).parent.parent
+mymodule_path = str( script_dir.joinpath( '..', 'Utilities', 'leer', 'readFileFinal_y_Geos.py' ) )
 
-# Crear opciones para las razas
-races = df["race/ethnicity"].unique().tolist()
-races.sort()
-options_dropdown_race = []
-for race in races:
-    options_dropdown_race.append({'label': race, 'value': race})
+# Import mymodule
+loader = importlib.machinery.SourceFileLoader( 'readFileFinal_y_Geos.py', mymodule_path )
+spec = importlib.util.spec_from_loader( 'readFileFinal_y_Geos.py', loader )
+mymodule = importlib.util.module_from_spec( spec )
+loader.exec_module( mymodule )
 
-# Crear opciones para las asignaturas
-subjects = ["math score", "reading score", "writing score"]
-options_dropdown_subjects = []
-for subject in subjects:
-    options_dropdown_subjects.append({'label': subject.split()[0].capitalize(), 'value': subject})
 
-# Crear opciones para las variables categóricas
 
-cols_checklist = ["gender","race/ethnicity","parental level of education", "lunch", "test preparation course"]
 
-options_checklist = []
-for col in cols_checklist:
-    options_checklist.append({'value': col, 'label': col})
+# Use mymodule
+listings_filtered_df = mymodule.leerFicheroFinal()
+opcionesGlobales = mymodule.opcionesGlobales()
+
+
 
 app = dash.Dash()
 
-#app.config.suppress_callback_exceptions = True
-
 logging.getLogger('werkzeug').setLevel(logging.INFO)
+
+
 
 app.layout = html.Div(
     children= [
