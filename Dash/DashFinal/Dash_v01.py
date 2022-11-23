@@ -9,7 +9,7 @@ from dash.dependencies import Input, Output, State
 import logging
 from plotly.subplots import make_subplots
 import sys
-
+import os
 import importlib.machinery
 import importlib.util
 from pathlib import Path
@@ -29,6 +29,7 @@ loader.exec_module( mymodule )
 
 # Use mymodule
 listings_filtered_df = mymodule.leerFicheroFinal()
+(jsonGeoNeigh,bigJSONNeigh) = mymodule.leerFicherosGeo()
 opcionesGlobales = mymodule.opcionesGlobales()
 
 
@@ -43,18 +44,20 @@ app.layout = html.Div(
     children= [
         html.H1( # Primera fila
             children = [
-                "Análisis descriptivo sobre la puntuación de los estudiantes"
+                "Análisis sobre el mercado de AirBnB en Nueva York"
             ],
-        id = "titulo",
-        style = {
-            "text-align": "center",
-            "text-decoration": "underline",
-            "backgroundColor": "lightblue",
-            "margin-bottom": "20px",
-            "border-style": "outset",
-            "border-color": "lightblue",
-            "height": "50px"
-        }
+            id = "titulo",
+            style = {
+                "text-align": "center",
+                "vertical-align":"middle",
+                #"text-decoration": "underline",
+                "backgroundColor": "#2c3e50",
+                "color":"white",
+                #"margin-bottom": "20px",
+                "border-style": "outset",
+                #"border-color": "lightblue",
+                "height": "70px"
+            }
         ),
 
         html.H2( # Segunda fila
@@ -83,7 +86,7 @@ app.layout = html.Div(
                             }
                         ),
                         dcc.Dropdown(
-                            options = options_dropdown_race,
+                            options = "options_dropdown_race",
                             placeholder = "Selecciona una raza",
                             id = "dropdown_race",
                             style = {
@@ -93,7 +96,7 @@ app.layout = html.Div(
                             }
                         ),
                         dcc.Dropdown(
-                            options = options_dropdown_subjects,
+                            options = "options_dropdown_subjects",
                             placeholder = "Selecciona una asignatura",
                             id = "dropdown_subject",
                             style = {
@@ -131,7 +134,7 @@ app.layout = html.Div(
                             }
                         ),
                         dcc.Dropdown(
-                            options = options_dropdown_race,
+                            options = "options_dropdown_race",
                             placeholder = "Selecciona una raza",
                             id = "dropdown_race_2",
                             style = {
@@ -141,7 +144,7 @@ app.layout = html.Div(
                             }
                         ),
                         dcc.Dropdown(
-                            options = options_dropdown_subjects,
+                            options = "options_dropdown_subjects",
                             placeholder = "Selecciona una asignatura",
                             id = "dropdown_subject_2",
                             style = {
@@ -185,7 +188,7 @@ app.layout = html.Div(
                 html.Div(
                     children = [
                         dcc.Checklist(
-                            options = options_checklist,
+                            options = "options_checklist",
                             labelStyle = {
                                 'display': 'inline-block',
                                 'font-size': "18px",
@@ -231,7 +234,7 @@ app.layout = html.Div(
         "font-family": "Arial"
     }
 )
-
+""" 
 @app.callback(
     Output("dropdown_figure", "figure"),
     Output("dropdown_figure", "style"),
@@ -344,7 +347,7 @@ def checklist_callback(n_clicks,checklist_value):
             )
         
         fig.update_traces(textfont_size=12)
-        return (fig,{"display": "block"})
+        return (fig,{"display": "block"}) """
         
 
 if __name__ == '__main__':
