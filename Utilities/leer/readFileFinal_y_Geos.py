@@ -24,7 +24,7 @@ def leerFicherosGeo():
     return (jsonGeoNeigh,bigJSONNeigh)
 
 def leerFicherosCriminality():
-    """Devuelve una tupla de los ficheros geo
+    """Devuelve un fichero con info de criminalidad
 
     Returns:
         (geodataframe,geodataframe): Los dos GeoDF
@@ -32,6 +32,14 @@ def leerFicherosCriminality():
     df_criminality = pd.read_parquet("Data/NYC/Data_with_neighbourhood.parquet")
     return df_criminality
 
+def leerFicheroHosts():
+    """Devuelve un fichero con info de hosts
+
+    Returns:
+        (geodataframe,geodataframe): Los dos GeoDF
+    """  
+    df_hosts = pd.read_parquet("Data/total data/modified data/hosts_df.parquet")
+    return df_hosts
 
 def opcionesGlobales():
     """Devuelve parámetros totales de la app

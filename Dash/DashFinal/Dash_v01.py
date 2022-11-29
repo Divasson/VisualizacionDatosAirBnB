@@ -11,9 +11,7 @@
 ## - crear araña dummies
 
 # TODO BELEN
-## - añadir plots en rentabilidad: rentabilidad, revenue, occupancy rate
-## - crear más pestañas
-## - descriptivo: pie chart tipo de propiedad, mapas nota media reseña, 
+## - descriptivo: pie chart tipo de propiedad,arañas, 
 
 ## PESTAÑAS
 # - rentabilidad: mapas rentabilidad
@@ -50,6 +48,10 @@ import plotly.express as px
 from PIL import Image
 import pickle
 
+import geopandas
+import geopy
+from geopy.geocoders import Nominatim 
+
 
 # Get path to mymodule. Credits to = https://csatlas.com/python-import-file-module/
 script_dir = Path( __file__ ).parent.parent
@@ -64,6 +66,7 @@ loader.exec_module( mymodule )
 # Use mymodule
 listings_filtered_df = mymodule.leerFicheroFinal()
 criminality_df = mymodule.leerFicherosCriminality()
+hosts_df = mymodule.leerFicheroHosts()
 (jsonGeoNeigh,bigJSONNeigh) = mymodule.leerFicherosGeo()
 opcionesGlobales = mymodule.opcionesGlobales()
 
@@ -502,14 +505,35 @@ def graph_bar_hosts(df):
     return fig
 
 def graph_table_hosts(df):
+    filtered_data = df.nlargest(10, 'Total de Airbnbs')
     fig = go.Figure()
-    fig.add_table(cells=dict(
-                        values=df[col].describe().reset_index().T.values.tolist()
-                        ), 
-                 header=dict(values=['Statistic', 'Value']), 
-                  row=i+1, 
-                  col=2
-                 )
+
+    fig.add_trace(
+        go.Table(
+            header=dict(
+                values=filtered_data.columns,
+                line_color='white',
+                fill_color='#4D5656',
+                font=dict(size=15, color="#D7DBDD"),
+                align=['left','center'],
+            ),
+            cells=dict(
+                values= [filtered_data[k].tolist() for k in filtered_data.columns],
+                align = ['left','center'],
+                #fill=dict(color=['paleturquoise', 'white']),
+                font=dict(size=15, color="#4D5656"),
+                height=30
+            )
+
+        ),
+    )
+
+    fig.update_layout(height=500,width=2200,paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=18), 
+                    title = dict(text="Información sobre los top 10 host de Nueva York",x=0.5,y=0.90, font=dict(size=17)))
+
+    return fig
+
+
 
 def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
     
@@ -594,7 +618,16 @@ def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
     #print(prediction)
     return prediction
 
+def getLatLong(address,barrio):
+    locator = Nominatim(user_agent="my_geocoder")
+    location = locator.geocode("122 E 19th St,Manhattan,New York,USA")
 
+    location=locator.geocode(str(address)+","+str(barrio)+",New York,USA")
+    lat= location[1][0]
+    lon= location[1][1]
+
+    return [lat,lon]
+    
 #################################################################################################################################################################################################
 ####################################################################################### DASH APP ################################################################################################
 #################################################################################################################################################################################################
@@ -878,7 +911,7 @@ tab_descriptive_content = dbc.Card(
 tab_hosts_content = dbc.Card(
     dbc.CardBody([
         dcc.Graph(id="bar-hosts",style={'width': '100%', 'height': '100%'}),
-        dcc.Graph(id="table-hosts",style={'width': '100%', 'height': '100%'})        
+        dcc.Graph(id="table-hosts", figure=graph_table_hosts(hosts_df), style={'width': '100%', 'height': '100%'})        
     ]),
 )
 
@@ -904,32 +937,31 @@ tab_model_prediction_content = dbc.Card(
                 [
 
                     dbc.Col([
-                        dbc.Label("Barrio", width=10, html_for="input-barrio", style={"fontSize":"150%", "text-align": "center", "color":"lightgrey"}),
+                        dbc.Label("Dirección", width=10, html_for="input-address", style={"fontSize":"150%", "text-align": "center", "color":"lightgrey"}),
                         dbc.Input(
-                            id="input-barrio", placeholder="Introduzca el barrio del Airbnb"
+                            id="input-address", placeholder="Introduzca la dirección del Airbnb"
                         )],
                         width=5,
-                        
                     ),
                     
                     
                     dbc.Col([
 
-                        dbc.Label("Latitud", width=10, html_for="input-latitude", style={"fontSize":"150%","text-align": "center","color":"lightgrey"}),
+                        dbc.Label("Barrio", width=10, html_for="input-barrio", style={"fontSize":"150%","text-align": "center","color":"lightgrey"}),
                         dbc.Input(
-                            id="input-latitude", placeholder="Introduzca la latitud del Airbnb", type="number"
+                            id="input-barrio", placeholder="Introduzca el barrio del Airbnb", 
                         )],
-                        width=2,
+                        width=4,
                     ),
 
                     
-                    dbc.Col([
-                        dbc.Label("Longitud", width=10, html_for="input-longitude", style={"fontSize":"150%", "text-align": "center", "color":"lightgrey"}),
-                        dbc.Input(
-                            id="input-longitude", placeholder="Introduzca la longitud del Airbnb", type="number"
-                        )],
-                        width=2,
-                    ),
+                    # dbc.Col([
+                    #     dbc.Label("Longitud", width=10, html_for="input-longitude", style={"fontSize":"150%", "text-align": "center", "color":"lightgrey"}),
+                    #     dbc.Input(
+                    #         id="input-longitude", placeholder="Introduzca la longitud del Airbnb", type="number"
+                    #     )],
+                    #     width=2,
+                    # ),
                 ],
                 justify="center",
                 
@@ -1256,21 +1288,19 @@ def update_bar_hosts(rentabilidad,barrio,precio,checkFiltros):
 @app.callback(
     Output('row-price', 'children'),
     Output('button-predict', 'n_clicks'),
+    Input('input-address', 'value'),
     Input('input-barrio', 'value'),
-    Input('input-latitude', 'value'),
-    Input('input-longitude', 'value'),
     Input('input-accommodates', 'value'),
     Input('input-beds', 'value'),
     Input('input-baths', 'value'),
     Input('amenities-input', 'value'),
     Input("button-predict", "n_clicks"),
 )
-def update_predicted_price(barrio,latitude,longitude,accommodates,beds,baths,amenities,button):
+def update_predicted_price(direccion,barrio,accommodates,beds,baths,amenities,button):
     """
     Args:
+        direccion (str): _description_
         barrio (str): _description_
-        latitude (float): _description_
-        longitude (float): _description_
         accommodates (float): _description_
         beds (float): _description_
         baths (float): _description_
@@ -1317,6 +1347,9 @@ def update_predicted_price(barrio,latitude,longitude,accommodates,beds,baths,ame
             kitchen = 1
         else:
             kitchen = 0
+
+        #obtenemos latitud y longitud
+        latitude, longitude = getLatLong(direccion,barrio)
 
         precio_pred_arr = predictPrice(barrio,latitude,longitude,accommodates,beds,baths,wifi,kitchen,dryer,heating,tv)
         precio_pred = round(precio_pred_arr[0],2)
