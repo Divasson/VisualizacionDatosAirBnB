@@ -23,6 +23,15 @@ def leerFicherosGeo():
     bigJSONNeigh = json.load(open("Data/neighbourhoods/bigneighbourhoods.geojson"))
     return (jsonGeoNeigh,bigJSONNeigh)
 
+def leerFicherosCriminality():
+    """Devuelve una tupla de los ficheros geo
+
+    Returns:
+        (geodataframe,geodataframe): Los dos GeoDF
+    """  
+    df_criminality = pd.read_parquet("Data/NYC/Data_with_neighbourhood.parquet")
+    return df_criminality
+
 
 def opcionesGlobales():
     """Devuelve parámetros totales de la app

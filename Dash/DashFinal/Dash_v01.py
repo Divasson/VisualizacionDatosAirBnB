@@ -27,7 +27,7 @@
 # - bonus
 
 
-# Importamos las librerias mínimas necesarias
+# Importamos las librerias mínimas necesarinoatasdas
 import importlib.machinery
 import importlib.util
 import logging
@@ -63,12 +63,12 @@ loader.exec_module( mymodule )
 
 # Use mymodule
 listings_filtered_df = mymodule.leerFicheroFinal()
+criminality_df = mymodule.leerFicherosCriminality()
 (jsonGeoNeigh,bigJSONNeigh) = mymodule.leerFicherosGeo()
 opcionesGlobales = mymodule.opcionesGlobales()
 
 # load ML model
 rf_model = pickle.load(open(str(os.getcwd())+str("\\modelling\\random_forest_model.pickle"), 'rb'))
-
 
 #################################################################################################################################################################################################
 ####################################################################################### FUNCIONES ###############################################################################################
@@ -281,9 +281,235 @@ def graph_subplot_rentabilidad(df):
     fig.update_layout(mapbox1=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74}),
                     mapbox2=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74}))
 
-    fig.update_layout(height=1000,width=2200, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=12))    
+    fig.update_layout(height=1000,width=2200, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=20))    
 
     return fig
+
+def graph_subplot_prices(df):
+    fig = make_subplots(
+        rows = 1,
+        cols = 2,
+        specs=[[{'type':'mapbox'}, {'type':'mapbox'}]], # Necesario para agregar un piechart
+        subplot_titles = (
+            "Precio medio por noche por distrito",
+            "Precio medio por noche por barrio"
+        )
+    )
+
+    fig.add_trace(trace=go.Choroplethmapbox(
+                            geojson=jsonGeoNeigh,
+                            featureidkey='properties.neighbourhood',
+                            locations=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
+                            z=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['price'],
+                            colorscale=px.colors.sequential.YlGnBu,
+                            colorbar=dict(thickness=20, x=0.46,title="$", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                        ),
+                row=1,
+                col=1    
+    )
+    fig.add_trace(trace=go.Choroplethmapbox(
+                            geojson=bigJSONNeigh,
+                            featureidkey='properties.neighbourhood_group', 
+                            locations=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
+                            z=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['price'],
+                            colorscale=px.colors.sequential.YlGnBu,
+                            colorbar=dict(thickness=20, x=1.02,title="$", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                        ),
+                row=1,
+                col=2           
+    )
+    fig.update_layout(mapbox1=dict(zoom=8.9,style='carto-positron',center={"lat": 40.7, "lon": -74}),
+                    mapbox2=dict(zoom=8.9,style='carto-positron',center={"lat": 40.7, "lon": -74}))
+
+    fig.update_layout(height=600,width=2200, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=20))    
+
+    return fig
+
+def graph_histogram_prices(df):
+    data = []
+    colorsBarrios = {
+        "Brooklyn": "#1f77b4",
+        "Bronx": "#ff7f0e",
+        "Staten Island":"#2ca02c",
+        "Queens":"#9467bd",
+        "Manhattan":"#d62728"
+    }
+
+    for x in df["neighbourhood_group_cleansed"].unique():
+        data.append(go.Histogram(
+                        x = df[df["neighbourhood_group_cleansed"] == x]['price'],
+                        marker_color=colorsBarrios[x],
+                        xbins=dict(
+                            start= 0,
+                            end= 600,
+                            size=5
+                        ),
+                        opacity=0.5,
+                        name = x
+                    )
+        )
+        
+    layout = go.Layout(title = "Distribución de los precios por barrios", xaxis_title = "Precios por noche", yaxis_title = "Frecuencia",
+                    barmode = "overlay", bargap = 0.1, height=450, width=2200, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=12))
+
+    fig = go.Figure(data = data, layout = layout)
+
+    return fig
+
+def graph_subplot_occupancy_rates(df):
+    fig = make_subplots(
+        rows = 1,
+        cols = 2,
+        specs=[[{'type':'mapbox'}, {'type':'mapbox'}]], # Necesario para agregar un piechart
+        subplot_titles = (
+            "Occupancy rate medio (%) por distrito",
+            "Occupancy rate medio (%) por barrio"
+        )
+    )
+
+    fig.add_trace(trace=go.Choroplethmapbox(
+                            geojson=jsonGeoNeigh,
+                            featureidkey='properties.neighbourhood',
+                            locations=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
+                            z=100*(df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['occupancy_rate']),
+                            colorscale=px.colors.sequential.YlGnBu,
+                            colorbar=dict(thickness=20, x=0.46,title="%", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                        ),
+                row=1,
+                col=1    
+    )
+    fig.add_trace(trace=go.Choroplethmapbox(
+                            geojson=bigJSONNeigh,
+                            featureidkey='properties.neighbourhood_group', 
+                            locations=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
+                            z=100*(df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['occupancy_rate']),
+                            colorscale=px.colors.sequential.YlGnBu,
+                            colorbar=dict(thickness=20, x=1.02,title="%", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                        ),
+                row=1,
+                col=2           
+    )
+    fig.update_layout(mapbox1=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74}),
+                    mapbox2=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74}))
+
+    fig.update_layout(height=1000,width=2200, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=20))    
+
+    return fig
+
+def graph_subplot_criminality(df):
+    GranTitulo = "Crimenes en NYC"
+    title = "**No se aplican filtros a estas visualizaciones</span>"
+    nombreBarra = "# crímenes"
+    columna_a_mirar = "OFNS_DESC"
+    OFNS_DESC= "MURDER & NON-NEGL. MANSLAUGHTER"
+
+    #zmin= min(NYC_crime[NYC_crime["OFNS_DESC"]==OFNS_DESC].groupby("neighbourhood",as_index=False).count()[columna_a_mirar])
+    #zmax= max(NYC_crime[NYC_crime["OFNS_DESC"]==OFNS_DESC].groupby("neighbourhood",as_index=False).count()[columna_a_mirar])
+
+    fig = make_subplots(
+        rows = 1,
+        cols = 2,
+        specs=[[{'type':'mapbox'}, {'type':'mapbox'}]], # Necesario para agregar un piechart
+        subplot_titles = (
+            "Media anual de asesinatos por distrito",
+            "Media anual de crímenes sexuales por distrito"
+        )
+    )
+
+    #fig.show()
+    fig.add_trace(trace=go.Choroplethmapbox(
+                            geojson=jsonGeoNeigh,
+                            featureidkey='properties.neighbourhood',
+                            locations=df[df["OFNS_DESC"]=="MURDER & NON-NEGL. MANSLAUGHTER"].groupby("neighbourhood",as_index=False).count()['neighbourhood'],
+                            z=df[df["OFNS_DESC"]=="MURDER & NON-NEGL. MANSLAUGHTER"].groupby("neighbourhood",as_index=False).count()[columna_a_mirar],
+                            colorscale=px.colors.sequential.Reds,
+                            #colorscale=px.colors.diverging.balance,
+                            #zmin=zmin,zmax=zmax,
+                            colorbar=dict(thickness=20, x=0.46,title=nombreBarra,tickformat='1',ticklen=3),
+                            text=df[df["OFNS_DESC"]=="MURDER & NON-NEGL. MANSLAUGHTER"].groupby("neighbourhood",as_index=False).count()['neighbourhood'],
+                            hovertemplate = "<b>%{text}</b><br>" +
+                                            title+": %{z:1}<br>" +
+                                            "<extra></extra>"
+                        ),
+                row=1,
+                col=1    
+    )
+
+    fig.add_trace(trace=go.Choroplethmapbox(
+                            geojson=jsonGeoNeigh,
+                            featureidkey='properties.neighbourhood', 
+                            locations=df[(df["OFNS_DESC"]=="RAPE")|(df["OFNS_DESC"]=="SEX CRIMES")].groupby("neighbourhood",as_index=False).count()['neighbourhood'],
+                            z=df[(df["OFNS_DESC"]=="RAPE")|(df["OFNS_DESC"]=="SEX CRIMES")].groupby("neighbourhood",as_index=False).count()[columna_a_mirar],
+                            colorscale=px.colors.sequential.Reds,
+                            #zmin=zmin,zmax=zmax,
+                            colorbar=dict(thickness=20, x=1.02,title=nombreBarra,tickformat='1',ticklen=3),
+                            text=df[(df["OFNS_DESC"]=="RAPE")|(df["OFNS_DESC"]=="SEX CRIMES")].groupby("neighbourhood",as_index=False).count()['neighbourhood'],
+                            hovertemplate = "<b>%{text}</b><br>" +
+                                            title+": %{z:1}<br>" +
+                                            "<extra></extra>"
+                        ),
+                row=1,
+                col=2           
+    )
+
+
+    fig.update_layout(mapbox1=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74})
+                    ,mapbox2=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74})
+                    )
+    #x=0.5,y=0.95
+    fig.update_layout(height=1000,width=2200,paper_bgcolor='rgba(0,0,0,0)', title = dict(text=title, x=0.5,y=0.98,font=dict(size=15,color='red')), plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15))    
+    return fig
+
+def graph_bar_hosts(df):
+    colors = {
+    "t": ["gold","Superhost"],
+    "f": ["lightgray", "No Superhost"]
+    }
+
+    fig = go.Figure()
+    level_count = pd.DataFrame(df.groupby("host_response_time")["host_is_superhost"].value_counts()).rename(columns = {"host_is_superhost": "count"}).reset_index()
+    group_count = pd.DataFrame(level_count.groupby(["host_response_time"])["count"].sum()).reset_index()
+    level_count=level_count.merge(group_count, on='host_response_time', how='left').rename(columns = {"count_x": "count","count_y": "total"})
+    level_count
+
+    # ordenar valores para que los segmentos aparezcan en orden
+    def sortfunc(seg):
+        if seg in ("within an hour", "within a few hours"):
+            return "00"+seg
+        elif seg in ("within a day"):
+            return "0"+seg
+        else:
+            return seg
+
+    level_count = level_count.sort_values(by="host_response_time", key=lambda x: x.apply(sortfunc))
+
+    for key in colors.keys():
+        aux = level_count[level_count["host_is_superhost"] == key]
+        fig.add_trace(
+            go.Bar(
+                x = aux["host_response_time"],
+                y = 100*aux["count"]/aux["total"],
+                name = colors[key][1],
+                marker_color = colors[key][0],
+                width= np.repeat(0.65,len(level_count))
+            )
+        )
+        
+    fig.update_layout(title = dict(text="Distribución de superhosts agrupados por tiempo de respuesta, en números relativos",x=0.5,y=0.90, font=dict(size=17)),
+                    xaxis_title = "Tiempo de respuesta", yaxis_title = "Número relativo de hosts (%)", 
+                    barmode='stack', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15), height=500,width=2200,)
+
+    return fig
+
+def graph_table_hosts(df):
+    fig = go.Figure()
+    fig.add_table(cells=dict(
+                        values=df[col].describe().reset_index().T.values.tolist()
+                        ), 
+                 header=dict(values=['Statistic', 'Value']), 
+                  row=i+1, 
+                  col=2
+                 )
 
 def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
     
@@ -573,12 +799,16 @@ app.layout = dbc.Container(
             dbc.Col([
                     dbc.Tabs([
                                 dbc.Tab(label="Rentabilidad", tab_id="profitability"),
+                                dbc.Tab(label="Precios", tab_id="prices"),
+                                dbc.Tab(label="Occupancy rates", tab_id="occupancy-rate"),
+                                dbc.Tab(label="Criminalidad", tab_id="criminality"),
                                 dbc.Tab(label="Descriptivo", tab_id="descriptive"),
+                                dbc.Tab(label="Hosts", tab_id="hosts"),
                                 dbc.Tab(label="Predicción de precios", tab_id="model_prediction"),
                                 dbc.Tab(label="Bonus", tab_id="bonus")     
                             ],
                             id="tabs",
-                            active_tab="model_prediction",
+                            active_tab="hosts",
 
                             ),
                     
@@ -609,15 +839,47 @@ app.layout = dbc.Container(
 #################################################################################################################################################################################################
 
 tab_profitability_content = dbc.Card(
-    dbc.CardBody(
+    dbc.CardBody([
         dcc.Graph(id="subplot-profitability",style={'width': '100%', 'height': '100%'})
+    ]),
+)
+
+tab_prices_content = dbc.Card(
+    dbc.CardBody([
+        dcc.Graph(id="histogram-prices",style={'width': '100%', 'height': '100%'}),
+        dcc.Graph(id="subplot-prices",style={'width': '100%', 'height': '100%'})        
+    ]),
+)
+
+tab_occupancy_rate_content = dbc.Card(
+    dbc.CardBody([
+        dcc.Graph(id="subplot-occupancy-rate",style={'width': '100%', 'height': '100%'})
+    ]),
+)
+
+tab_criminality_content = dbc.Card(
+    dbc.CardBody(
+        [
+            dcc.Graph(figure=graph_subplot_criminality(criminality_df), id="subplot-criminality",style={'width': '100%', 'height': '100%'})
+        ]
     ),
 )
 
 tab_descriptive_content = dbc.Card(
     dbc.CardBody(
-        
+        [
+            html.P("This is tab 1!", className="card-text"),
+            dbc.Button("Click here", color="success"),
+        ]
     ),
+    className="mt-3",
+)
+
+tab_hosts_content = dbc.Card(
+    dbc.CardBody([
+        dcc.Graph(id="bar-hosts",style={'width': '100%', 'height': '100%'}),
+        dcc.Graph(id="table-hosts",style={'width': '100%', 'height': '100%'})        
+    ]),
 )
 
 tab_model_prediction_content = dbc.Card(
@@ -825,8 +1087,16 @@ tab_bonus_content = dbc.Card(
 def switch_tab(tab):
     if tab == "profitability":
         return tab_profitability_content
+    elif tab == "prices":
+        return tab_prices_content
+    elif tab == "occupancy-rate":
+        return tab_occupancy_rate_content
+    elif tab == "criminality":
+        return tab_criminality_content
     elif tab == "descriptive":
         return tab_descriptive_content
+    elif tab == "hosts":
+        return tab_hosts_content
     elif tab == "model_prediction":
         return tab_model_prediction_content
     elif tab == "bonus":
@@ -842,7 +1112,7 @@ def switch_tab(tab):
     Input('range-slider-precio', 'value'),
     Input('switches-input', 'value'),
 )
-def update_graph_rentabilidad(rentabilidad,barrio,precio,checkFiltros):
+def update_subplot_rentabilidad(rentabilidad,barrio,precio,checkFiltros):
     """
     Args:
         rentabilidad (array-float): _description_
@@ -859,27 +1129,23 @@ def update_graph_rentabilidad(rentabilidad,barrio,precio,checkFiltros):
         df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
 
         return graph_subplot_rentabilidad(df_filtered)
-        #return [graph_rentabilidad_distritos(df_filtered),graph_rentabilidad_barrios(df_filtered)] #devolvemos el nuevo gráfico
     
     else:
         return graph_subplot_rentabilidad(listings_filtered_df)
-       #return [graph_rentabilidad_distritos(listings_filtered_df),graph_rentabilidad_barrios(listings_filtered_df)]
 
-
-
+# callback para actualizar subplot prices
 @app.callback(
-    Output('fig-price-districts-tab', 'figure'),
-    Output('fig-price-disneighbourhoods-tab', 'figure'),
+    Output('subplot-prices', 'figure'),
+    Output('histogram-prices', 'figure'),
     Input('range-slider-rentabilidad', 'value'),
     Input('barrios-seleccion', 'value'),
     Input('range-slider-precio', 'value'),
-    Input('switches-input', 'value')
-    
+    Input('switches-input', 'value'),
 )
-def update_graph_precio(rentabilidad,barrio,precio,checkFiltros):
+def update_plots_prices(rentabilidad,barrio,precio,checkFiltros):
     """
     Args:
-        rentabilidad (float): _description_
+        rentabilidad (array-float): _description_
         barrio (str): Barrio o Todo
         precio (float): _description_
         checkFiltros (int): _description_
@@ -892,27 +1158,98 @@ def update_graph_precio(rentabilidad,barrio,precio,checkFiltros):
         #filtramos el df
         df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
 
-        return [graph_precio_distritos(df_filtered), graph_precio_barrios(df_filtered)] #devolvemos el nuevo gráfico
+        return [graph_subplot_prices(df_filtered),graph_histogram_prices(df_filtered)]
     
     else:
-        return [graph_precio_distritos(listings_filtered_df), graph_precio_barrios(listings_filtered_df)]
+        return [graph_subplot_prices(listings_filtered_df),graph_histogram_prices(listings_filtered_df)]
 
+# callback para actualizar subplot prices
+@app.callback(
+    Output('subplot-occupancy-rate', 'figure'),
+    Input('range-slider-rentabilidad', 'value'),
+    Input('barrios-seleccion', 'value'),
+    Input('range-slider-precio', 'value'),
+    Input('switches-input', 'value'),
+)
+def update_subplot_occupancy_rate(rentabilidad,barrio,precio,checkFiltros):
+    """
+    Args:
+        rentabilidad (array-float): _description_
+        barrio (str): Barrio o Todo
+        precio (float): _description_
+        checkFiltros (int): _description_
+    
+    Return:
+        grpah_updated (figure): gráfico actualizado
 
-# @app.callback(Output("store-nclicks", "data"), Input("button-predict", "n_clicks"))
-# def save_n_clicks(button):
+    """
+    if checkFiltros:
+        #filtramos el df
+        df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
+
+        return graph_subplot_occupancy_rates(df_filtered)
+    
+    else:
+        return graph_subplot_occupancy_rates(listings_filtered_df)
+
+# callback para actualizar subplot prices
+@app.callback(
+    Output('bar-hosts', 'figure'),
+    Input('range-slider-rentabilidad', 'value'),
+    Input('barrios-seleccion', 'value'),
+    Input('range-slider-precio', 'value'),
+    Input('switches-input', 'value'),
+)
+def update_bar_hosts(rentabilidad,barrio,precio,checkFiltros):
+    """
+    Args:
+        rentabilidad (array-float): _description_
+        barrio (str): Barrio o Todo
+        precio (float): _description_
+        checkFiltros (int): _description_
+    
+    Return:
+        grpah_updated (figure): gráfico actualizado
+
+    """
+    if checkFiltros:
+        #filtramos el df
+        df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
+
+        return graph_bar_hosts(df_filtered)
+    
+    else:
+        return graph_bar_hosts(listings_filtered_df)
+
+# @app.callback(
+#     Output('fig-price-districts-tab', 'figure'),
+#     Output('fig-price-disneighbourhoods-tab', 'figure'),
+#     Input('range-slider-rentabilidad', 'value'),
+#     Input('barrios-seleccion', 'value'),
+#     Input('range-slider-precio', 'value'),
+#     Input('switches-input', 'value')
+    
+# )
+# def update_graph_precio(rentabilidad,barrio,precio,checkFiltros):
 #     """
-#     Args: 
-#         button: numero de clicks del boton de prediccion
-
+#     Args:
+#         rentabilidad (float): _description_
+#         barrio (str): Barrio o Todo
+#         precio (float): _description_
+#         checkFiltros (int): _description_
+    
 #     Return:
-#         store_nclicks: variable global
+#         grpah_updated (figure): gráfico actualizado
+
 #     """
-#     if button > 0:
-#         print("button")
-#         print(button)
-#         return button
+#     if checkFiltros:
+#         #filtramos el df
+#         df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
+
+#         return [graph_precio_distritos(df_filtered), graph_precio_barrios(df_filtered)] #devolvemos el nuevo gráfico
+    
 #     else:
-#         return 0
+#         return [graph_precio_distritos(listings_filtered_df), graph_precio_barrios(listings_filtered_df)]
 
 
 # callback prediccion precio
@@ -927,7 +1264,6 @@ def update_graph_precio(rentabilidad,barrio,precio,checkFiltros):
     Input('input-baths', 'value'),
     Input('amenities-input', 'value'),
     Input("button-predict", "n_clicks"),
-    #Input("store-nclicks", "data"),
 )
 def update_predicted_price(barrio,latitude,longitude,accommodates,beds,baths,amenities,button):
     """
