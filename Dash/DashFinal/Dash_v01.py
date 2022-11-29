@@ -1,9 +1,30 @@
 
 ## *: Importante: Belen es espectacular
-## TODO: Margenes
-## TODO: Centrado pagina web
-## TODO: Zoom y centrado plot
 
+# REVISAR
+## margenes y ajuste de pagina a todas las pantallas
+
+# TODO NACHO
+## - Zoom y centrado plot
+## - direcciones con lat y long
+## - guardar fichero final con dummies
+## - crear araña dummies
+
+# TODO BELEN
+## - añadir plots en rentabilidad: rentabilidad, revenue, occupancy rate
+## - crear más pestañas
+## - descriptivo: pie chart tipo de propiedad, mapas nota media reseña, 
+
+## PESTAÑAS
+# - rentabilidad: mapas rentabilidad
+# - occupancy rate: mapas occupancy rate
+# - precios: mapas precios + distribucion por barrio (histograma)
+# - revenue: mapas revenue por barrio
+# - hosts: time response w/superhost + tabla
+# - criminalidad: mapas
+# - descriptivo: arañas
+# - prediccion de precios: modelo
+# - bonus
 
 
 # Importamos las librerias mínimas necesarias
@@ -47,6 +68,7 @@ opcionesGlobales = mymodule.opcionesGlobales()
 
 # load ML model
 rf_model = pickle.load(open(str(os.getcwd())+str("\\modelling\\random_forest_model.pickle"), 'rb'))
+
 
 #################################################################################################################################################################################################
 ####################################################################################### FUNCIONES ###############################################################################################
@@ -209,6 +231,10 @@ def filtrarDF(rentabilidadMin,rentabilidadMax,barrio,precioMin,precioMax):
     Returns:
         DF: DF filtrado
     """    
+    #pasamos los porcentages a float
+    rentabilidadMin=rentabilidadMin/100
+    rentabilidadMax=rentabilidadMax/100
+
     df = listings_filtered_df
     if barrio!="Todos":
         df = df[df["neighbourhood_group_cleansed"]==barrio]
@@ -230,7 +256,6 @@ def graph_subplot_rentabilidad(df):
         )
     )
 
-    #fig.show()
     fig.add_trace(trace=go.Choroplethmapbox(
                             geojson=jsonGeoNeigh,
                             featureidkey='properties.neighbourhood',
@@ -257,13 +282,13 @@ def graph_subplot_rentabilidad(df):
                     mapbox2=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74}))
 
     fig.update_layout(height=1000,width=2200, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=12))    
-    #fig.update_geos(fitbounds="locations",visible=True)
-    fig.show()
 
     return fig
 
 def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
     
+    #print(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv)
+
     latitude = float(lat),
     longitude = float(lon),
     accommodates = float(acco),
@@ -275,59 +300,72 @@ def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
     has_heating = heating,
     has_tv = tv,
 
+    neighbourhood_group_cleansed_Manhattan = 0
+    neighbourhood_group_cleansed_Brooklyn = 0
+    neighbourhood_group_cleansed_Bronx = 0
+    neighbourhood_group_cleansed_Queens = 0
+    neighbourhood_group_cleansed_Staten_Island = 0
+
     if str(barrio).lower() == "manhattan":
-        neighbourhood_group_cleansed_Manhattan = 1,
-        neighbourhood_group_cleansed_Brooklyn = 0,
-        neighbourhood_group_cleansed_Bronx = 0,
-        neighbourhood_group_cleansed_Queens = 0,
+        neighbourhood_group_cleansed_Manhattan = 1
+        neighbourhood_group_cleansed_Brooklyn = 0
+        neighbourhood_group_cleansed_Bronx = 0
+        neighbourhood_group_cleansed_Queens = 0
         neighbourhood_group_cleansed_Staten_Island = 0
     elif str(barrio).lower() == "brooklyn":
-        neighbourhood_group_cleansed_Manhattan = 0,
-        neighbourhood_group_cleansed_Brooklyn = 1,
-        neighbourhood_group_cleansed_Bronx = 0,
-        neighbourhood_group_cleansed_Queens = 0,
+        neighbourhood_group_cleansed_Manhattan = 0
+        neighbourhood_group_cleansed_Brooklyn = 1
+        neighbourhood_group_cleansed_Bronx = 0
+        neighbourhood_group_cleansed_Queens = 0
         neighbourhood_group_cleansed_Staten_Island = 0
     elif str(barrio).lower() == "bronx":
-        neighbourhood_group_cleansed_Manhattan = 0,
-        neighbourhood_group_cleansed_Brooklyn = 0,
-        neighbourhood_group_cleansed_Bronx = 1,
-        neighbourhood_group_cleansed_Queens = 0,
+        neighbourhood_group_cleansed_Manhattan = 0
+        neighbourhood_group_cleansed_Brooklyn = 0
+        neighbourhood_group_cleansed_Bronx = 1
+        neighbourhood_group_cleansed_Queens = 0
         neighbourhood_group_cleansed_Staten_Island = 0
     elif str(barrio).lower() == "queens": 
-        neighbourhood_group_cleansed_Manhattan = 0,
-        neighbourhood_group_cleansed_Brooklyn = 0,
-        neighbourhood_group_cleansed_Bronx = 0,
-        neighbourhood_group_cleansed_Queens = 1,
+        neighbourhood_group_cleansed_Manhattan = 0
+        neighbourhood_group_cleansed_Brooklyn = 0
+        neighbourhood_group_cleansed_Bronx = 0
+        neighbourhood_group_cleansed_Queens = 1
         neighbourhood_group_cleansed_Staten_Island = 0
     elif str(barrio).lower() == "staten island": 
-        neighbourhood_group_cleansed_Manhattan = 0,
-        neighbourhood_group_cleansed_Brooklyn = 0,
-        neighbourhood_group_cleansed_Bronx = 0,
-        neighbourhood_group_cleansed_Queens = 0,
+        neighbourhood_group_cleansed_Manhattan = 0
+        neighbourhood_group_cleansed_Brooklyn = 0
+        neighbourhood_group_cleansed_Bronx = 0
+        neighbourhood_group_cleansed_Queens = 0
         neighbourhood_group_cleansed_Staten_Island = 1
     else:
-        neighbourhood_group_cleansed_Manhattan = 0,
-        neighbourhood_group_cleansed_Brooklyn = 0,
-        neighbourhood_group_cleansed_Bronx = 0,
-        neighbourhood_group_cleansed_Queens = 0,
+        neighbourhood_group_cleansed_Manhattan = 1
+        neighbourhood_group_cleansed_Brooklyn = 0
+        neighbourhood_group_cleansed_Bronx = 0
+        neighbourhood_group_cleansed_Queens = 0
         neighbourhood_group_cleansed_Staten_Island = 0
 
-    data_model = pd.DataFrame(data = [latitude, longitude, accommodates, beds, baths,
-                                        has_wifi, has_dryer, has_heating, has_kitchen, has_tv,
+    #print(neighbourhood_group_cleansed_Manhattan, neighbourhood_group_cleansed_Brooklyn , neighbourhood_group_cleansed_Bronx , neighbourhood_group_cleansed_Queens, neighbourhood_group_cleansed_Staten_Island)
+    data = [latitude[0], longitude[0], accommodates[0], beds[0], baths[0],
+                                        has_wifi[0], has_dryer[0], has_heating[0], has_kitchen[0], has_tv[0],
                                         neighbourhood_group_cleansed_Bronx,
                                         neighbourhood_group_cleansed_Brooklyn,
                                         neighbourhood_group_cleansed_Manhattan,
                                         neighbourhood_group_cleansed_Queens,
-                                        neighbourhood_group_cleansed_Staten_Island], 
-                                columns = ['latitude', 'longitude', 'accommodates', 'beds', 'baths',
-                                        'has_wifi', 'has_dryer', 'has_heating', 'has_kitchen', 'has_tv',
-                                        'neighbourhood_group_cleansed_Bronx',
-                                        'neighbourhood_group_cleansed_Brooklyn',
-                                        'neighbourhood_group_cleansed_Manhattan',
-                                        'neighbourhood_group_cleansed_Queens',
-                                        'neighbourhood_group_cleansed_Staten Island'])
-    
+                                        neighbourhood_group_cleansed_Staten_Island]
+    columns = ['latitude', 'longitude', 'accommodates', 'beds', 'baths',
+                                    'has_wifi', 'has_dryer', 'has_heating', 'has_kitchen', 'has_tv',
+                                    'neighbourhood_group_cleansed_Bronx',
+                                    'neighbourhood_group_cleansed_Brooklyn',
+                                    'neighbourhood_group_cleansed_Manhattan',
+                                    'neighbourhood_group_cleansed_Queens',
+                                    'neighbourhood_group_cleansed_Staten Island']
+    # print(data)    
+    # print(columns)
+    data_model = pd.DataFrame(data=[data], columns = columns)
+    #print(data_model)
+    #data_model.append(data)
+    #print(data_model)
     prediction = rf_model.predict(data_model)
+    #print(prediction)
     return prediction
 
 
@@ -371,10 +409,10 @@ itemsDropDownBarrios = [
 
 app.layout = dbc.Container(
     [
-        #dcc.Store(id="store"), # para guardar informacion. Es una variable
+        dcc.Store(id="store-nclicks", storage_type='session'), # para guardar informacion. Es una variable global para el numero de clicks
         
         dbc.Row([
-  
+                dcc.Store(id="n_clicks_button_pred"),
                 html.Img(src=returnImage('\Images\AirBnB\logoBlanco.png'),
                     style={
                         "display":"inline-block",
@@ -615,7 +653,7 @@ tab_model_prediction_content = dbc.Card(
                     
                     dbc.Col([
 
-                        dbc.Label("Latitud", width=10, html_for="input-latitude", style={"fontSize":"150%","text-align": "center","color":"lightgrey" }),
+                        dbc.Label("Latitud", width=10, html_for="input-latitude", style={"fontSize":"150%","text-align": "center","color":"lightgrey"}),
                         dbc.Input(
                             id="input-latitude", placeholder="Introduzca la latitud del Airbnb", type="number"
                         )],
@@ -652,7 +690,7 @@ tab_model_prediction_content = dbc.Card(
                     
                     dbc.Col([
 
-                        dbc.Label("Nº de camas", width=10, html_for="input-beds", style={"fontSize":"150%","text-align": "center","color":"lightgrey" }),
+                        dbc.Label("Nº de camas", width=10, html_for="input-beds", style={"fontSize":"150%","text-align": "center","color":"lightgrey"}),
                         dbc.Input(
                             id="input-beds", placeholder="Introduzca la latitud del Airbnb", type="number", min=0
                         )],
@@ -748,16 +786,18 @@ tab_model_prediction_content = dbc.Card(
             ),
 
             dbc.Row(
+                children=
                 [
-                    dbc.Label("$273", id="predicted-price",
-                        style={
-                            "fontSize":"250%",
-                            "text-align": "center",
-                            "color":"white",
-                        },
-                    ),
+                    # dbc.Label("$273", id="predicted-price",
+                    #     style={
+                    #         "fontSize":"250%",
+                    #         "text-align": "center",
+                    #         "color":"white",
+                    #     },
+                    # ),
                 ],
                justify="center",
+               id="row-price"
             ),
         ]
     ),
@@ -797,7 +837,6 @@ def switch_tab(tab):
 # callback para actualizar subplot rentabilidad
 @app.callback(
     Output('subplot-profitability', 'figure'),
-    #Output('fig-profitability-neighbourhoods-tab', 'figure'),
     Input('range-slider-rentabilidad', 'value'),
     Input('barrios-seleccion', 'value'),
     Input('range-slider-precio', 'value'),
@@ -858,9 +897,28 @@ def update_graph_precio(rentabilidad,barrio,precio,checkFiltros):
     else:
         return [graph_precio_distritos(listings_filtered_df), graph_precio_barrios(listings_filtered_df)]
 
+
+# @app.callback(Output("store-nclicks", "data"), Input("button-predict", "n_clicks"))
+# def save_n_clicks(button):
+#     """
+#     Args: 
+#         button: numero de clicks del boton de prediccion
+
+#     Return:
+#         store_nclicks: variable global
+#     """
+#     if button > 0:
+#         print("button")
+#         print(button)
+#         return button
+#     else:
+#         return 0
+
+
 # callback prediccion precio
 @app.callback(
-    Output('predicted-price', 'value'),
+    Output('row-price', 'children'),
+    Output('button-predict', 'n_clicks'),
     Input('input-barrio', 'value'),
     Input('input-latitude', 'value'),
     Input('input-longitude', 'value'),
@@ -868,7 +926,8 @@ def update_graph_precio(rentabilidad,barrio,precio,checkFiltros):
     Input('input-beds', 'value'),
     Input('input-baths', 'value'),
     Input('amenities-input', 'value'),
-    Input('button-predict', 'n_clicks'),
+    Input("button-predict", "n_clicks"),
+    #Input("store-nclicks", "data"),
 )
 def update_predicted_price(barrio,latitude,longitude,accommodates,beds,baths,amenities,button):
     """
@@ -883,52 +942,66 @@ def update_predicted_price(barrio,latitude,longitude,accommodates,beds,baths,ame
         button (int): _description_
     
     Return:
-        price_predicted (str): 
+        children: 
 
     """
-    wifi = 0,
-    kitchen = 0,
-    heating = 0,
-    tv = 0,
-    dryer = 0,
 
+    wifi = 0
+    kitchen = 0
+    heating = 0
+    tv = 0
+    dryer = 0
 
-    if button != 0:
-        #hacemos la prediccion
+    #print("nclicks")
+    print(button)
+    #if (nclicks is not None) & ((button > int(nclicks)) | (nclicks ==1)):
+    if button > 0:
 
-        if "wifi" in amenities:
+        if "wifi" in str(amenities):
             wifi = 1
         else: 
             wifi = 0
 
-        if "dryer" in amenities:
+        if "dryer" in str(amenities):
             dryer = 1
         else:
             dryer = 0
         
-        if "heating" in amenities:
+        if "heating" in str(amenities):
             heating = 1
         else:
             heating = 0
         
-        if "tv" in amenities:
+        if "tv" in str(amenities):
             tv = 1
         else:
             tv = 0
         
-        if "kitchen" in amenities:
+        if "kitchen" in str(amenities):
             kitchen = 1
         else:
             kitchen = 0
 
-        precio_pred = predictPrice(barrio,latitude,longitude,accommodates,beds,baths,wifi,kitchen,dryer,heating,tv)
+        precio_pred_arr = predictPrice(barrio,latitude,longitude,accommodates,beds,baths,wifi,kitchen,dryer,heating,tv)
+        precio_pred = round(precio_pred_arr[0],2)
         str_precio = "$" + str(precio_pred)
-        return  #devolvemos el nuevo gráfico
+        
+        return  [dbc.Label(str_precio, id="predicted-price",
+                        style={
+                            "fontSize":"250%",
+                            "text-align": "center",
+                            "color":"white",
+                        },
+                    ),0]
     
     else:
-        return ""
-
-
+        return [dbc.Label(" ", id="predicted-price",
+                        style={
+                            "fontSize":"250%",
+                            "text-align": "center",
+                            "color":"white",
+                        },
+                    ),0]
 
 
 
@@ -1004,5 +1077,8 @@ def generate_graphs(n):
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=8888)
+
+    #variables globales
+    n_clicks_button_pred = 0
 
 
