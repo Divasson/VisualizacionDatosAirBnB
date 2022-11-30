@@ -176,7 +176,7 @@ def graph_precio_distritos(df):
                                                 colorbar=dict(thickness=10, ticklen=1,title="$",tickformat='1.0$',tickcolor='grey',tickfont=dict(size=14, color='grey'),titlefont=dict(color='grey')),
                                                 text=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
                                                 hovertemplate = "<b>%{text}</b><br>" +
-                                                                "Avg. price: %{z:.0$}<br>" +
+                                                                "Avg. price: %{z:1$}<br>" +
                                                                 "<extra></extra>"
                                             )
                                       )
@@ -209,7 +209,7 @@ def graph_precio_barrios(df):
                                                 colorbar=dict(thickness=10, ticklen=1,title="$",tickformat='1.0$',tickcolor='grey',tickfont=dict(size=14, color='grey'),titlefont=dict(color='grey')),
                                                 text=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
                                                 hovertemplate = "<b>%{text}</b><br>" +
-                                                                "Avg. price: %{z:.0$}<br>" +
+                                                                "Avg. price: %{z:1}$<br>" +
                                                                 "<extra></extra>"
                                             )
                                       )
@@ -264,9 +264,13 @@ def graph_subplot_rentabilidad(df,barrio):
                             geojson=jsonGeoNeigh,
                             featureidkey='properties.neighbourhood',
                             locations=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
-                            z=100*(df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['profitability']),
+                            z=(df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['profitability']),
                             colorscale=px.colors.sequential.YlGnBu,
-                            colorbar=dict(thickness=20, x=0.46,title="%", tickformat='1.0$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                            colorbar=dict(thickness=20, x=0.46,title="%", tickformat='1.0%', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white')),
+                            text=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
+                            hovertemplate = "<b>%{text}</b><br>" +
+                                            "Avg. return: %{z:.1%}<br>" +
+                                            "<extra></extra>"
                         ),
                 row=1,
                 col=1    
@@ -275,9 +279,13 @@ def graph_subplot_rentabilidad(df,barrio):
                             geojson=bigJSONNeigh,
                             featureidkey='properties.neighbourhood_group', 
                             locations=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
-                            z=100*(df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['profitability']),
+                            z=(df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['profitability']),
                             colorscale=px.colors.sequential.YlGnBu,
-                            colorbar=dict(thickness=20, x=1.02,title="%", tickformat='1.0$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                            colorbar=dict(thickness=20, x=1.02,title="%", tickformat='1.0%', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white')),
+                            text=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
+                            hovertemplate = "<b>%{text}</b><br>" +
+                                            "Avg. return: %{z:.1%}<br>" +
+                                            "<extra></extra>"
                         ),
                 row=1,
                 col=2           
@@ -306,7 +314,11 @@ def graph_subplot_prices(df,barrio):
                             locations=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
                             z=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['price'],
                             colorscale=px.colors.sequential.YlGnBu,
-                            colorbar=dict(thickness=20, x=0.46,title="$", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                            colorbar=dict(thickness=20, x=0.46,title="$", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white')),
+                            text=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
+                            hovertemplate = "<b>%{text}</b><br>" +
+                                            "Avg. price: $%{z:.1$}<br>" +
+                                            "<extra></extra>"
                         ),
                 row=1,
                 col=1    
@@ -317,7 +329,11 @@ def graph_subplot_prices(df,barrio):
                             locations=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
                             z=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['price'],
                             colorscale=px.colors.sequential.YlGnBu,
-                            colorbar=dict(thickness=20, x=1.02,title="$", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                            colorbar=dict(thickness=20, x=1.02,title="$", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white')),
+                            text=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
+                            hovertemplate = "<b>%{text}</b><br>" +
+                                            "Avg. price: $%{z:.1$}<br>" +
+                                            "<extra></extra>"
                         ),
                 row=1,
                 col=2           
@@ -375,9 +391,13 @@ def graph_subplot_occupancy_rates(df,barrio):
                             geojson=jsonGeoNeigh,
                             featureidkey='properties.neighbourhood',
                             locations=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
-                            z=100*(df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['occupancy_rate']),
+                            z=(df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['occupancy_rate']),
                             colorscale=px.colors.sequential.YlGnBu,
-                            colorbar=dict(thickness=20, x=0.46,title="%", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                            colorbar=dict(thickness=20, x=0.46,title="%", tickformat='1%', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white')),
+                            text=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
+                            hovertemplate = "<b>%{text}</b><br>" +
+                                            "Avg. rate: %{z:.1%}<br>" +
+                                            "<extra></extra>"
                         ),
                 row=1,
                 col=1    
@@ -386,9 +406,13 @@ def graph_subplot_occupancy_rates(df,barrio):
                             geojson=bigJSONNeigh,
                             featureidkey='properties.neighbourhood_group', 
                             locations=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
-                            z=100*(df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['occupancy_rate']),
+                            z=(df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['occupancy_rate']),
                             colorscale=px.colors.sequential.YlGnBu,
-                            colorbar=dict(thickness=20, x=1.02,title="%", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                            colorbar=dict(thickness=20, x=1.02,title="%", tickformat='1%', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white')),
+                            text=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
+                            hovertemplate = "<b>%{text}</b><br>" +
+                                            "Avg. rate: %{z:.1%}<br>" +
+                                            "<extra></extra>"
                         ),
                 row=1,
                 col=2           
@@ -463,6 +487,55 @@ def graph_subplot_criminality(df):
     #x=0.5,y=0.95
     fig.update_layout(height=1000,width=2200,paper_bgcolor='rgba(0,0,0,0)', title = dict(text=title, x=1,y=0.98,font=dict(size=15,color='red')), plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15))    
     return fig
+
+def graph_bar_hosts_time_overall(df):
+    
+    lista = []
+    
+    colors = {
+    "t": ["gold","Superhost"],
+    "f": ["lightgray", "No Superhost"]
+    }
+
+    fig = go.Figure()
+    level_count = pd.DataFrame(df.groupby("host_response_time")["host_is_superhost"].value_counts()).rename(columns = {"host_is_superhost": "count"}).reset_index()
+    group_count = pd.DataFrame(level_count.groupby(["host_response_time"])["count"].sum()).reset_index()
+    level_count=level_count.merge(group_count, on='host_response_time', how='left').rename(columns = {"count_x": "count","count_y": "total"})
+    level_count
+
+    # ordenar valores para que los segmentos aparezcan en orden
+    def sortfunc(seg):
+        if seg in ("within an hour", "within a few hours"):
+            return "00"+seg
+        elif seg in ("within a day"):
+            return "0"+seg
+        else:
+            return seg
+
+    level_count = level_count.sort_values(by="host_response_time", key=lambda x: x.apply(sortfunc))
+
+    for key in colors.keys():
+        aux = level_count[level_count["host_is_superhost"] == key]
+        fig.add_trace(
+            go.Bar(
+                x = aux["host_response_time"],
+                y = 100*aux["count"]/aux["total"],
+                name = colors[key][1],
+                marker_color = colors[key][0],
+                width= np.repeat(0.65,len(level_count))
+            )
+        )
+    
+    fig = px.icicle(df, path=[px.Constant("All"),"host_response_time","host_is_superhost"], values='pop',
+                    color='lifeExp', hover_data=['iso_alpha'])
+                    #color_continuous_scale='RdBu',
+                    #color_continuous_midpoint=np.average(df['lifeExp'], weights=df['pop']))
+    #fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
+    #fig.show()
+
+    return fig
+
+
 
 def graph_bar_hosts(df):
     colors = {
@@ -547,7 +620,7 @@ def graph_pie_property_type(df):
 
     return fig
 
-def graph_spider_features(df):
+def graph_spider_features(df,barrio):
     colorsBarrios = {
             "Brooklyn": "#1f77b4",
             "Bronx": "#ff7f0e",
@@ -563,25 +636,45 @@ def graph_spider_features(df):
         "review_scores_rating",
         "profitability"]
 
+    maximo = {}
+    for y in lista:
+        maximo[y]=(max(df.groupby("neighbourhood_group_cleansed").agg('mean')[y]))
 
     fig = go.Figure()
     lista.append(lista[0])
+    
+    if barrio=="Todos":
 
-    for x in df["neighbourhood_group_cleansed"].unique():
+        for x in df["neighbourhood_group_cleansed"].unique():
+            data = []
+            for y in lista:
+                data.append((df[df["neighbourhood_group_cleansed"]==x].groupby("neighbourhood_group_cleansed").agg('mean')[y][0])/maximo[y])
+                #print((df[df["neighbourhood_group_cleansed"]==x].groupby("neighbourhood_group_cleansed").agg('mean')[y][0]))
+            #data.append(data[0])
+
+            
+            fig.add_trace(go.Scatterpolar(
+                        r=data,
+                        theta=lista,
+                        mode='lines',
+                        line_color=colorsBarrios[x],
+                        name=x,
+                        )
+            )
+    else:
         data = []
         for y in lista:
-            data.append((df[df["neighbourhood_group_cleansed"]==x].groupby("neighbourhood_group_cleansed").agg('mean')[y][0]))
+            data.append((df[df["neighbourhood_group_cleansed"]==barrio].groupby("neighbourhood_group_cleansed").agg('mean')[y][0])/maximo[y])
             #print((df[df["neighbourhood_group_cleansed"]==x].groupby("neighbourhood_group_cleansed").agg('mean')[y][0]))
         #data.append(data[0])
-        print(x)
-        print(data)
+
         
         fig.add_trace(go.Scatterpolar(
                     r=data,
                     theta=lista,
                     mode='lines',
-                    line_color=colorsBarrios[x],
-                    name=x,
+                    line_color=colorsBarrios[barrio],
+                    name=barrio,
                     )
         )
 
@@ -595,7 +688,7 @@ def graph_spider_features(df):
     showlegend=True,
     )
 
-    fig.update_layout(title=dict(text="<b>Valores medios por cada geografía</b><br>", x=0.50,y=0.97, font=dict(size=17)),paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15), height=500,width=734)
+    fig.update_layout(title=dict(text="<b>Valores medios por cada geografía</b><br><i>No se filtra por Barrio para poder verlos todos</i>", x=0.50,y=0.97, font=dict(size=17)),paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15), height=500,width=734)
 
     return fig
 
@@ -1004,14 +1097,14 @@ app.layout = dbc.Container(
                                 dbc.Tab(label="Rentabilidad", tab_id="profitability"),
                                 dbc.Tab(label="Precios", tab_id="prices"),
                                 dbc.Tab(label="Occupancy rates", tab_id="occupancy-rate"),
-                                dbc.Tab(label="Criminalidad", tab_id="criminality"),
                                 dbc.Tab(label="Descriptivo", tab_id="descriptive"),
                                 dbc.Tab(label="Hosts", tab_id="hosts"),
                                 dbc.Tab(label="Predicción de precios", tab_id="model_prediction"),
+                                dbc.Tab(label="Criminalidad", tab_id="criminality"),
                                 dbc.Tab(label="Bonus", tab_id="bonus")     
                             ],
                             id="tabs",
-                            active_tab="descriptive",
+                            active_tab="profitability",
 
                             ),
                     
@@ -1117,6 +1210,7 @@ tab_descriptive_content = dbc.Card(
 
 tab_hosts_content = dbc.Card(
     dbc.CardBody([
+        dcc.Graph(id="bar-hosts-time-overall",style={'width': '100%', 'height': '100%'}),
         dcc.Graph(id="bar-hosts",style={'width': '100%', 'height': '100%'}),
         dcc.Graph(id="table-hosts", figure=graph_table_hosts(hosts_df), style={'width': '100%', 'height': '100%'})        
     ]),
@@ -1444,7 +1538,36 @@ def update_subplot_occupancy_rate(rentabilidad,barrio,precio,checkFiltros):
     else:
         return graph_subplot_occupancy_rates(listings_filtered_df,"Todos")
 
-# callback para actualizar subplot prices
+# callback para actualizar subplot hosts
+@app.callback(
+    Output('bar-hosts-time-overall', 'figure'),
+    Input('range-slider-rentabilidad', 'value'),
+    Input('barrios-seleccion', 'value'),
+    Input('range-slider-precio', 'value'),
+    Input('switches-input', 'value'),
+)
+def update_bar_hosts_time_overall(rentabilidad,barrio,precio,checkFiltros):
+    """
+    Args:
+        rentabilidad (array-float): _description_
+        barrio (str): Barrio o Todo
+        precio (float): _description_
+        checkFiltros (int): _description_
+    
+    Return:
+        grpah_updated (figure): gráfico actualizado
+
+    """
+    if checkFiltros:
+        #filtramos el df
+        df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
+
+        return graph_bar_hosts_time_overall(df_filtered)
+    
+    else:
+        return graph_bar_hosts_time_overall(listings_filtered_df)
+    
+    
 @app.callback(
     Output('bar-hosts', 'figure'),
     Input('range-slider-rentabilidad', 'value'),
@@ -1525,12 +1648,12 @@ def update_spider_feature(rentabilidad,barrio,precio,checkFiltros):
     """
     if checkFiltros:
         #filtramos el df
-        df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
+        df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],"Todos",precio[0],precio[1])
 
-        return graph_spider_features(df_filtered)
+        return graph_spider_features(df_filtered,barrio)
     
     else:
-        return graph_spider_features(listings_filtered_df)
+        return graph_spider_features(listings_filtered_df,"Todos")
 
 # callback prediccion precio
 @app.callback(
