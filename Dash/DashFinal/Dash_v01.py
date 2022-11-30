@@ -37,6 +37,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc
 from dash import html
+#import geopy
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -48,9 +49,7 @@ import plotly.express as px
 from PIL import Image
 import pickle
 
-import geopandas
-import geopy
-from geopy.geocoders import Nominatim 
+#import geopy
 
 
 # Get path to mymodule. Credits to = https://csatlas.com/python-import-file-module/
@@ -619,13 +618,15 @@ def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
     return prediction
 
 def getLatLong(address,barrio):
-    locator = Nominatim(user_agent="my_geocoder")
-    location = locator.geocode("122 E 19th St,Manhattan,New York,USA")
+    # locator =  geopy.geocoders.Nominatim(user_agent="my_geocoder")
+    # location = locator.geocode("122 E 19th St,Manhattan,New York,USA")
 
-    location=locator.geocode(str(address)+","+str(barrio)+",New York,USA")
-    lat= location[1][0]
-    lon= location[1][1]
+    # location=locator.geocode(str(address)+","+str(barrio)+",New York,USA")
+    # lat= location[1][0]
+    # lon= location[1][1]
 
+    lat = 40.75
+    lon = -73.98
     return [lat,lon]
     
 #################################################################################################################################################################################################
