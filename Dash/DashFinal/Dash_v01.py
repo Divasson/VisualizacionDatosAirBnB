@@ -490,48 +490,80 @@ def graph_subplot_criminality(df):
 
 def graph_bar_hosts_time_overall(df):
     
-    lista = []
     
-    colors = {
-    "t": ["gold","Superhost"],
-    "f": ["lightgray", "No Superhost"]
+    
+    diccionarioColoresTiempo={
+        "a few days or more":"mistyrose",
+        "within a day":"aliceblue",
+        "within a few hours":"honeydew",
+        "within an hour":"thistle"
     }
 
-    fig = go.Figure()
+    
     level_count = pd.DataFrame(df.groupby("host_response_time")["host_is_superhost"].value_counts()).rename(columns = {"host_is_superhost": "count"}).reset_index()
     group_count = pd.DataFrame(level_count.groupby(["host_response_time"])["count"].sum()).reset_index()
     level_count=level_count.merge(group_count, on='host_response_time', how='left').rename(columns = {"count_x": "count","count_y": "total"})
     level_count
 
-    # ordenar valores para que los segmentos aparezcan en orden
-    def sortfunc(seg):
-        if seg in ("within an hour", "within a few hours"):
-            return "00"+seg
-        elif seg in ("within a day"):
-            return "0"+seg
-        else:
-            return seg
+    nivelesIntermedios = level_count["host_response_time"].unique().tolist()
+    lista1 = []
+    lista2 = []
+    lista3 = []
+    lista7 = []
 
-    level_count = level_count.sort_values(by="host_response_time", key=lambda x: x.apply(sortfunc))
 
-    for key in colors.keys():
-        aux = level_count[level_count["host_is_superhost"] == key]
-        fig.add_trace(
-            go.Bar(
-                x = aux["host_response_time"],
-                y = 100*aux["count"]/aux["total"],
-                name = colors[key][1],
-                marker_color = colors[key][0],
-                width= np.repeat(0.65,len(level_count))
-            )
-        )
+    for index,tiempo in enumerate(nivelesIntermedios):
+        lista1.append(index+1)
+        lista2.append(len(nivelesIntermedios)+1)
+        #print(level_count[(level_count["host_response_time"]==tiempo)&(level_count["host_is_superhost"]=='t')]["count"].values)
+        print()
+        
+        try:
+            lista3.append(level_count[(level_count["host_response_time"]==tiempo)&(level_count["host_is_superhost"]=='t')]["count"].values[0])
+        except:
+            lista3.append(0)
+        
+        lista7.append("gold")
+        
+        lista1.append(index+1)
+        lista2.append(len(nivelesIntermedios)+2)
+        #print(level_count[(level_count["host_response_time"]==tiempo)&(level_count["host_is_superhost"]=='f')]["count"].values)
+        try:
+            lista3.append(level_count[(level_count["host_response_time"]==tiempo)&(level_count["host_is_superhost"]=='f')]["count"].values[0])
+        except:
+            lista3.append(0)
+        
+        
+        lista7.append("lightgray")
+    lista4 = []
+    lista5 = []
+    lista6 = []
+
+    for index,tiempo in enumerate(nivelesIntermedios):
+        lista4.append(0)
+        lista5.append(index+1)
+        lista6.append(level_count[(level_count["host_response_time"]==tiempo)]["total"].values[0])
+        lista7.append(diccionarioColoresTiempo[tiempo])
     
-    fig = px.icicle(df, path=[px.Constant("All"),"host_response_time","host_is_superhost"], values='pop',
-                    color='lifeExp', hover_data=['iso_alpha'])
-                    #color_continuous_scale='RdBu',
-                    #color_continuous_midpoint=np.average(df['lifeExp'], weights=df['pop']))
-    #fig.update_layout(margin = dict(t=50, l=25, r=25, b=25))
-    #fig.show()
+    fig = go.Figure(data=[go.Sankey(
+        node = dict(
+            pad = 15,
+            thickness = 20,
+            line = dict(color = "black", width = 0.5),
+            label = ["Todos los hosts"]+nivelesIntermedios+["SuperHost","Host"],
+            color = "white"
+        ),
+        link = dict(
+            source = lista1+lista4, 
+            target = lista2+lista5,
+            value = lista3+lista6,
+            color= lista7
+    ))])
+
+    fig.update_layout(title="Distribucion tiempo de respuesta para host y superhost", 
+                      font_size=10,paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                      height=800,width=2200)
+
 
     return fig
 
@@ -1101,7 +1133,7 @@ app.layout = dbc.Container(
                                 dbc.Tab(label="Hosts", tab_id="hosts"),
                                 dbc.Tab(label="Predicción de precios", tab_id="model_prediction"),
                                 dbc.Tab(label="Criminalidad", tab_id="criminality"),
-                                dbc.Tab(label="Bonus", tab_id="bonus")     
+                                dbc.Tab(label="Variación de precios", tab_id="bonus")     
                             ],
                             id="tabs",
                             active_tab="profitability",
@@ -1211,7 +1243,7 @@ tab_descriptive_content = dbc.Card(
 tab_hosts_content = dbc.Card(
     dbc.CardBody([
         dcc.Graph(id="bar-hosts-time-overall",style={'width': '100%', 'height': '100%'}),
-        dcc.Graph(id="bar-hosts",style={'width': '100%', 'height': '100%'}),
+        #dcc.Graph(id="bar-hosts",style={'width': '100%', 'height': '100%'}),
         dcc.Graph(id="table-hosts", figure=graph_table_hosts(hosts_df), style={'width': '100%', 'height': '100%'})        
     ]),
 )
@@ -1568,33 +1600,33 @@ def update_bar_hosts_time_overall(rentabilidad,barrio,precio,checkFiltros):
         return graph_bar_hosts_time_overall(listings_filtered_df)
     
     
-@app.callback(
-    Output('bar-hosts', 'figure'),
-    Input('range-slider-rentabilidad', 'value'),
-    Input('barrios-seleccion', 'value'),
-    Input('range-slider-precio', 'value'),
-    Input('switches-input', 'value'),
-)
-def update_bar_hosts(rentabilidad,barrio,precio,checkFiltros):
-    """
-    Args:
-        rentabilidad (array-float): _description_
-        barrio (str): Barrio o Todo
-        precio (float): _description_
-        checkFiltros (int): _description_
+# @app.callback(
+#     Output('bar-hosts', 'figure'),
+#     Input('range-slider-rentabilidad', 'value'),
+#     Input('barrios-seleccion', 'value'),
+#     Input('range-slider-precio', 'value'),
+#     Input('switches-input', 'value'),
+# )
+# def update_bar_hosts(rentabilidad,barrio,precio,checkFiltros):
+#     """
+#     Args:
+#         rentabilidad (array-float): _description_
+#         barrio (str): Barrio o Todo
+#         precio (float): _description_
+#         checkFiltros (int): _description_
     
-    Return:
-        grpah_updated (figure): gráfico actualizado
+#     Return:
+#         grpah_updated (figure): gráfico actualizado
 
-    """
-    if checkFiltros:
-        #filtramos el df
-        df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
+#     """
+#     if checkFiltros:
+#         #filtramos el df
+#         df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
 
-        return graph_bar_hosts(df_filtered)
+#         return graph_bar_hosts(df_filtered)
     
-    else:
-        return graph_bar_hosts(listings_filtered_df)
+#     else:
+#         return graph_bar_hosts(listings_filtered_df)
 
 
 # callback para actualizar pie chart
