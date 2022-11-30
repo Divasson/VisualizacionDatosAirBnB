@@ -37,7 +37,7 @@ import dash
 import dash_bootstrap_components as dbc
 from dash import dcc
 from dash import html
-#import geopy
+import geopy
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -173,7 +173,7 @@ def graph_precio_distritos(df):
                                                 colorscale=px.colors.sequential.YlGnBu,
                                                 #colorscale=px.colors.diverging.balance,
                                                 #zmin=zmin,zmax=zmax,
-                                                colorbar=dict(thickness=10, ticklen=1,title="$",tickformat='1$',tickcolor='grey',tickfont=dict(size=14, color='grey'),titlefont=dict(color='grey')),
+                                                colorbar=dict(thickness=10, ticklen=1,title="$",tickformat='1.0$',tickcolor='grey',tickfont=dict(size=14, color='grey'),titlefont=dict(color='grey')),
                                                 text=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
                                                 hovertemplate = "<b>%{text}</b><br>" +
                                                                 "Avg. price: %{z:.0$}<br>" +
@@ -206,7 +206,7 @@ def graph_precio_barrios(df):
                                                 colorscale=px.colors.sequential.YlGnBu,
                                                 #colorscale=px.colors.diverging.balance,
                                                 #zmin=zmin,zmax=zmax,
-                                                colorbar=dict(thickness=10, ticklen=1,title="$",tickformat='1$',tickcolor='grey',tickfont=dict(size=14, color='grey'),titlefont=dict(color='grey')),
+                                                colorbar=dict(thickness=10, ticklen=1,title="$",tickformat='1.0$',tickcolor='grey',tickfont=dict(size=14, color='grey'),titlefont=dict(color='grey')),
                                                 text=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
                                                 hovertemplate = "<b>%{text}</b><br>" +
                                                                 "Avg. price: %{z:.0$}<br>" +
@@ -236,6 +236,7 @@ def filtrarDF(rentabilidadMin,rentabilidadMax,barrio,precioMin,precioMax):
     #pasamos los porcentages a float
     rentabilidadMin=rentabilidadMin/100
     rentabilidadMax=rentabilidadMax/100
+    
 
     df = listings_filtered_df
     if barrio!="Todos":
@@ -243,11 +244,12 @@ def filtrarDF(rentabilidadMin,rentabilidadMax,barrio,precioMin,precioMax):
     z = df[
             ((df["profitability"]>=rentabilidadMin)&(df["profitability"]<=rentabilidadMax))
             &
-            ((df["price"]>=precioMin)&(df["profitability"]<=precioMax))
+            ((df["price"]>=precioMin)&(df["price"]<=precioMax))
         ]
+    
     return z 
 
-def graph_subplot_rentabilidad(df):
+def graph_subplot_rentabilidad(df,barrio):
     fig = make_subplots(
         rows = 1,
         cols = 2,
@@ -264,7 +266,7 @@ def graph_subplot_rentabilidad(df):
                             locations=df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['neighbourhood_cleansed'],
                             z=100*(df.groupby("neighbourhood_cleansed",as_index=False).agg("mean")['profitability']),
                             colorscale=px.colors.sequential.YlGnBu,
-                            colorbar=dict(thickness=20, x=0.46,title="%", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                            colorbar=dict(thickness=20, x=0.46,title="%", tickformat='1.0$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
                         ),
                 row=1,
                 col=1    
@@ -275,19 +277,19 @@ def graph_subplot_rentabilidad(df):
                             locations=df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['neighbourhood_group_cleansed'],
                             z=100*(df.groupby("neighbourhood_group_cleansed",as_index=False).agg("mean")['profitability']),
                             colorscale=px.colors.sequential.YlGnBu,
-                            colorbar=dict(thickness=20, x=1.02,title="%", tickformat='1$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
+                            colorbar=dict(thickness=20, x=1.02,title="%", tickformat='1.0$', tickcolor='white', tickfont=dict(size=20, color='white'),titlefont=dict(color='white'))
                         ),
                 row=1,
                 col=2           
     )
-    fig.update_layout(mapbox1=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74}),
-                    mapbox2=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74}))
+    fig.update_layout(mapbox1=dict(zoom=opcionesGlobales["Centros"][barrio][2],style='carto-positron',center={"lat": opcionesGlobales["Centros"][barrio][0], "lon": opcionesGlobales["Centros"][barrio][1]}),
+                    mapbox2=dict(zoom=opcionesGlobales["Centros"][barrio][2],style='carto-positron',center={"lat": opcionesGlobales["Centros"][barrio][0], "lon": opcionesGlobales["Centros"][barrio][1]}))
 
     fig.update_layout(height=1000,width=2200, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=20))    
 
     return fig
 
-def graph_subplot_prices(df):
+def graph_subplot_prices(df,barrio):
     fig = make_subplots(
         rows = 1,
         cols = 2,
@@ -320,10 +322,10 @@ def graph_subplot_prices(df):
                 row=1,
                 col=2           
     )
-    fig.update_layout(mapbox1=dict(zoom=8.9,style='carto-positron',center={"lat": 40.7, "lon": -74}),
-                    mapbox2=dict(zoom=8.9,style='carto-positron',center={"lat": 40.7, "lon": -74}))
+    fig.update_layout(mapbox1=dict(zoom=opcionesGlobales["Centros"][barrio][2],style='carto-positron',center={"lat": opcionesGlobales["Centros"][barrio][0], "lon": opcionesGlobales["Centros"][barrio][1]}),
+                    mapbox2=dict(zoom=opcionesGlobales["Centros"][barrio][2],style='carto-positron',center={"lat": opcionesGlobales["Centros"][barrio][0], "lon": opcionesGlobales["Centros"][barrio][1]}))
 
-    fig.update_layout(height=600,width=2200, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=20))    
+    fig.update_layout(height=800,width=2200, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=20))    
 
     return fig
 
@@ -358,7 +360,7 @@ def graph_histogram_prices(df):
 
     return fig
 
-def graph_subplot_occupancy_rates(df):
+def graph_subplot_occupancy_rates(df,barrio):
     fig = make_subplots(
         rows = 1,
         cols = 2,
@@ -391,8 +393,8 @@ def graph_subplot_occupancy_rates(df):
                 row=1,
                 col=2           
     )
-    fig.update_layout(mapbox1=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74}),
-                    mapbox2=dict(zoom=9.5,style='carto-positron',center={"lat": 40.7, "lon": -74}))
+    fig.update_layout(mapbox1=dict(zoom=opcionesGlobales["Centros"][barrio][2],style='carto-positron',center={"lat": opcionesGlobales["Centros"][barrio][0], "lon": opcionesGlobales["Centros"][barrio][1]}),
+                    mapbox2=dict(zoom=opcionesGlobales["Centros"][barrio][2],style='carto-positron',center={"lat": opcionesGlobales["Centros"][barrio][0], "lon": opcionesGlobales["Centros"][barrio][1]}))
 
     fig.update_layout(height=1000,width=2200, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=20))    
 
@@ -691,17 +693,34 @@ def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
     return prediction
 
 def getLatLong(address,barrio):
-    # locator =  geopy.geocoders.Nominatim(user_agent="my_geocoder")
-    # location = locator.geocode("122 E 19th St,Manhattan,New York,USA")
+    print("Buscando Lat Lon")
+    locator =  geopy.geocoders.Nominatim(user_agent="my_geocoder")
+    #location = locator.geocode("122 E 19th St,Manhattan,New York,USA")
+    location=locator.geocode(str(address)+","+str(barrio)+",New York,USA")
+    lat= location[1][0]
+    lon= location[1][1]
 
-    # location=locator.geocode(str(address)+","+str(barrio)+",New York,USA")
-    # lat= location[1][0]
-    # lon= location[1][1]
-
-    lat = 40.75
-    lon = -73.98
+    print(lat,lon)
     return [lat,lon]
     
+def pintarDireccionMetida(lat,lon,direccion):
+    fig = go.Figure()
+    
+    fig.add_trace(go.Scattermapbox(
+        lat=[lat],
+        lon=[lon],
+        text=[direccion],
+        marker=go.scattermapbox.Marker(
+            size=20
+        ),
+        marker_color='tomato',
+        mode='text+markers',
+        showlegend=False
+    ))
+    fig.update_layout(mapbox=dict(style='carto-positron',center={"lat": lat, "lon": lon},zoom=14))
+    fig.update_layout(height=500,paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',margin=dict(t=0,b=0,l=0,r=0))
+    #fig.show()
+    return fig
 #################################################################################################################################################################################################
 ####################################################################################### DASH APP ################################################################################################
 #################################################################################################################################################################################################
@@ -762,7 +781,7 @@ app.layout = dbc.Container(
                         "horizontal-align": "right",
                         "textAlign": "right",
                         "color": "white",
-                        "fontSize":"200%"
+                        #"fontSize":"200%"
                     }
                 ),
             ],
@@ -1041,15 +1060,33 @@ tab_model_prediction_content = dbc.Card(
                         dbc.Input(
                             id="input-address", placeholder="Introduzca la dirección del Airbnb"
                         )],
-                        width=5,
+                        #width=5,
+                        style={
+                            "display":"inline-block",
+                            "height":"100%"
+                        }
                     ),
                     
+
                     
                     dbc.Col([
-
                         dbc.Label("Barrio", width=10, html_for="input-barrio", style={"fontSize":"150%","text-align": "center","color":"lightgrey"}),
-                        dbc.Input(
-                            id="input-barrio", placeholder="Introduzca el barrio del Airbnb", 
+                        dcc.Dropdown(id="input-barrio",
+                                    options=[
+                                        "Manhattan",
+                                        "Brooklyn",
+                                        "Queens",
+                                        "Staten Island",
+                                        "Bronx"
+                                    ],
+                                    placeholder="Introduzca el barrio",
+                                    #value="Manhattan",
+                                    style={
+                                        "display":"inline-block",
+                                        "width":"80%",
+                                        "height":"50%",
+                                        "align":"center"
+                                    }
                         )],
                         width=4,
                     ),
@@ -1250,14 +1287,15 @@ def update_subplot_rentabilidad(rentabilidad,barrio,precio,checkFiltros):
         grpah_updated (figure): gráfico actualizado
 
     """
+    
     if checkFiltros:
         #filtramos el df
         df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
 
-        return graph_subplot_rentabilidad(df_filtered)
+        return graph_subplot_rentabilidad(df_filtered,barrio)
     
     else:
-        return graph_subplot_rentabilidad(listings_filtered_df)
+        return graph_subplot_rentabilidad(listings_filtered_df,"Todos")
 
 # callback para actualizar subplot prices
 @app.callback(
@@ -1284,10 +1322,10 @@ def update_plots_prices(rentabilidad,barrio,precio,checkFiltros):
         #filtramos el df
         df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
 
-        return [graph_subplot_prices(df_filtered),graph_histogram_prices(df_filtered)]
+        return [graph_subplot_prices(df_filtered,barrio),graph_histogram_prices(df_filtered)]
     
     else:
-        return [graph_subplot_prices(listings_filtered_df),graph_histogram_prices(listings_filtered_df)]
+        return [graph_subplot_prices(listings_filtered_df,"Todos"),graph_histogram_prices(listings_filtered_df)]
 
 # callback para actualizar subplot prices
 @app.callback(
@@ -1313,10 +1351,10 @@ def update_subplot_occupancy_rate(rentabilidad,barrio,precio,checkFiltros):
         #filtramos el df
         df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
 
-        return graph_subplot_occupancy_rates(df_filtered)
+        return graph_subplot_occupancy_rates(df_filtered,barrio)
     
     else:
-        return graph_subplot_occupancy_rates(listings_filtered_df)
+        return graph_subplot_occupancy_rates(listings_filtered_df,"Todos")
 
 # callback para actualizar subplot prices
 @app.callback(
@@ -1356,7 +1394,7 @@ def update_bar_hosts(rentabilidad,barrio,precio,checkFiltros):
     Input('range-slider-precio', 'value'),
     Input('switches-input', 'value'),
 )
-def update_bar_hosts(rentabilidad,barrio,precio,checkFiltros):
+def update_pie_chart(rentabilidad,barrio,precio,checkFiltros):
     """
     Args:
         rentabilidad (array-float): _description_
@@ -1385,7 +1423,7 @@ def update_bar_hosts(rentabilidad,barrio,precio,checkFiltros):
     Input('range-slider-precio', 'value'),
     Input('switches-input', 'value'),
 )
-def update_bar_hosts(rentabilidad,barrio,precio,checkFiltros):
+def update_spider_feature(rentabilidad,barrio,precio,checkFiltros):
     """
     Args:
         rentabilidad (array-float): _description_
@@ -1442,8 +1480,9 @@ def update_predicted_price(direccion,barrio,accommodates,beds,baths,amenities,bu
 
     #print("nclicks")
     print(button)
+    
     #if (nclicks is not None) & ((button > int(nclicks)) | (nclicks ==1)):
-    if button > 0:
+    if (button > 0) & (barrio in opcionesGlobales["Barrios"]):
 
         if "wifi" in str(amenities):
             wifi = 1
@@ -1472,18 +1511,28 @@ def update_predicted_price(direccion,barrio,accommodates,beds,baths,amenities,bu
 
         #obtenemos latitud y longitud
         latitude, longitude = getLatLong(direccion,barrio)
-
+        
         precio_pred_arr = predictPrice(barrio,latitude,longitude,accommodates,beds,baths,wifi,kitchen,dryer,heating,tv)
+        print("trasPrediccion")
+        
         precio_pred = round(precio_pred_arr[0],2)
         str_precio = "$" + str(precio_pred)
         
-        return  [dbc.Label(str_precio, id="predicted-price",
+        
+        
+        
+        
+        return  [[dbc.Label(str_precio, id="predicted-price",
                         style={
                             "fontSize":"250%",
                             "text-align": "center",
                             "color":"white",
                         },
-                    ),0]
+                    ),
+                 dcc.Graph(figure=pintarDireccionMetida(lat=latitude,lon= longitude,direccion=direccion), 
+                           id="mapa-direccion",
+                           style={'width': '100%', 'height': '100%'})]
+                 ,0]
     
     else:
         return [dbc.Label(" ", id="predicted-price",

@@ -74,7 +74,15 @@ def opcionesGlobales():
                        "Bronx",
                        "Staten Island",
                        "Queens",
-                       "Manhattan"]
+                       "Manhattan"],
+            "Centros":{
+                "Todos":[40.7,-74,9.5],
+                "Brooklyn": [40.64822,-73.95232,10.5],
+                "Bronx": [40.85038,-73.87173,11],
+                "Staten Island":[40.58141,-74.15259,10.8],
+                "Queens":[40.72,-73.82121,10],
+                "Manhattan":[40.77819,-73.96796,10.5]
+            }
         }
     return z
 
