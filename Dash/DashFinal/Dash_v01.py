@@ -658,6 +658,34 @@ def graph_spider_features_normalized(df):
 
     return fig
 
+def graph_bar_amenities(df):
+
+    total_neighbourhood = df.groupby("neighbourhood_group_cleansed").agg({"id":"count"}).reset_index()
+    total_neighbourhood = total_neighbourhood.rename({"id":"total"},axis=1)
+
+    grouped_amenities_df = df.groupby("neighbourhood_group_cleansed").agg({"has_wifi":"sum", "has_dryer":"sum", "has_tv":"sum", "has_heating":"sum", "has_kitchen":"sum"})
+    grouped_amenities_df = grouped_amenities_df.reset_index()
+
+    join_df = pd.merge(grouped_amenities_df,total_neighbourhood, how="left",on="neighbourhood_group_cleansed")
+
+    join_df["percentage_has_wifi"] = (join_df["has_wifi"]/join_df["total"]).round(2)
+    join_df["percentage_has_dryer"] = (join_df["has_dryer"]/join_df["total"]).round(2)
+    join_df["percentage_has_tv"] = (join_df["has_tv"]/join_df["total"]).round(2)
+    join_df["percentage_has_heating"] = (join_df["has_heating"]/join_df["total"]).round(2)
+    join_df["percentage_has_kitchen"] = (join_df["has_kitchen"]/join_df["total"]).round(2)
+
+    newnames = {'percentage_has_wifi':'Tiene wifi', 'percentage_has_dryer': 'Tiene secador', 'percentage_has_tv': 'Tiene TV', 'percentage_has_heating': 'Tiene calefacción', 'percentage_has_kitchen': 'Tiene cocina'}
+    join_df = join_df.rename(newnames,axis=1)
+    join_df
+
+    fig = go.Figure()
+    fig = px.bar(join_df, x="neighbourhood_group_cleansed", y=["Tiene wifi","Tiene secador", "Tiene TV", "Tiene calefacción", "Tiene cocina"], barmode='group', color_discrete_sequence=px.colors.diverging.Temps)
+    fig.update_layout(title = dict(text="<b>Porcentaje de Aribnbs por barrios que presentan los servicios más demandados</b><br><i>No se aplican filtros a este gráfico<i>", font=dict(size=17), x=0.5,y=0.95),
+                        xaxis_title ="",yaxis_title = "Porcentaje de Airbnbs (%)", paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15), height=500,width=2150,
+
+                        legend= dict(title=""))
+    return fig 
+
 def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
     
     #print(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv)
@@ -744,14 +772,14 @@ def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
 def getLatLong(address,barrio):
     print("Buscando Lat Lon")
     locator =  geopy.geocoders.Nominatim(user_agent="my_geocoder")
-    #location = locator.geocode("122 E 19th St,Manhattan,New York,USA")
+    # #####location = locator.geocode("122 E 19th St,Manhattan,New York,USA")
     location=locator.geocode(str(address)+","+str(barrio)+",New York,USA")
     lat= location[1][0]
     lon= location[1][1]
 
     print(lat,lon)
     return [lat,lon]
-    
+        
 def pintarDireccionMetida(lat,lon,direccion):
     fig = go.Figure()
     
@@ -1070,7 +1098,17 @@ tab_descriptive_content = dbc.Card(
                 #dcc.Graph(id="pie-property-type",style={'width': '100%', 'height': '100%'}),
                 #dcc.Graph(id="spider-features",style={'width': '100%', 'height': '100%'})
 
-            ], justify="center",style={"height": "50%"}),           
+            ], justify="center",style={"height": "50%"}),  
+
+            dbc.Row([
+                dbc.Col(
+                [
+                    dcc.Graph(figure=graph_bar_amenities(listings_filtered_df), id="bar-amenities",style={'width': '100%', 'height': '100%'})
+                ],
+                width=12,
+                style={"height": "100%"},),
+
+            ], justify="center",style={"height": "50%"})        
         ]
 
     ),
