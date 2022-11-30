@@ -545,10 +545,10 @@ def graph_pie_property_type(df):
 
     return fig
 
-def graph_spider_amenities(df):
+def graph_spider_features(df):
     return 
 
-def graph_spider_features(df):    
+def graph_spider_features_normalized(df):    
     colorsBarrios = {
             "Brooklyn": "#1f77b4",
             "Bronx": "#ff7f0e",
@@ -602,7 +602,7 @@ def graph_spider_features(df):
     showlegend=True,
     )
 
-    fig.update_layout(title=dict(text="<b>Valores medios por cada geografía<b>", x=0.50,y=0.97, font=dict(size=17)),paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15), height=500,width=734)
+    fig.update_layout(title=dict(text="<b>Valores medios normalizados por cada geografía</b><br><i>No se aplican filtros al gráfico<i>", x=0.50,y=0.97, font=dict(size=17)),paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15), height=500,width=734)
 
 
     return fig
@@ -984,12 +984,19 @@ tab_descriptive_content = dbc.Card(
                     style={"height": "100%"},
                 ),
 
-                 dbc.Col(
-                    [
-                      dcc.Graph(id="spider-features",style={'width': '100%', 'height': '100%'})
-                    ],
-                    width=4,
-                    style={"height": "100%"},),
+                dbc.Col(
+                [
+                    dcc.Graph(id="spider-features",style={'width': '100%', 'height': '100%'})
+                ],
+                width=4,
+                style={"height": "100%"},),
+
+                dbc.Col(
+                [
+                    dcc.Graph(id="spider-features-normalized",figure =graph_spider_features_normalized(listings_filtered_df) ,style={'width': '100%', 'height': '100%'})
+                ],
+                width=4,
+                style={"height": "100%"},),
 
                 #dcc.Graph(id="pie-property-type",style={'width': '100%', 'height': '100%'}),
                 #dcc.Graph(id="spider-features",style={'width': '100%', 'height': '100%'})
