@@ -70,7 +70,7 @@ hosts_df = mymodule.leerFicheroHosts()
 opcionesGlobales = mymodule.opcionesGlobales()
 
 # load ML model
-rf_model = pickle.load(open(str(os.getcwd())+str("\\modelling\\random_forest_model.pickle"), 'rb'))
+rf_model = pickle.load(open(str(os.getcwd())+str("\\modelling\\random_forest_model_tunned.pickle"), 'rb'))
 
 ListingDiffSemanaFinde = pd.read_parquet((str(os.getcwd())+"\\Data\\total data\\modified data\\calendario.parquet"))
 ListingDiffSemanaFindePlotear = pd.read_parquet((str(os.getcwd())+"\\Data\\total data\\modified data\\paraPlotearCalendario.parquet"))
@@ -1062,7 +1062,7 @@ tab_descriptive_content = dbc.Card(
                 [
                     dcc.Graph(figure=graph_bar_amenities(listings_filtered_df), id="bar-amenities",style={'width': '100%', 'height': '100%'})
                 ],
-                width=12,
+                width=11,
                 style={"height": "100%"},),
 
             ], justify="center",style={"height": "50%"})        
