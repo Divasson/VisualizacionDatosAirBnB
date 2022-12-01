@@ -496,10 +496,11 @@ def graph_bar_hosts_time_overall(df):
     
     
     diccionarioColoresTiempo={
-        "a few days or more":"mistyrose",
-        "within a day":"aliceblue",
-        "within a few hours":"honeydew",
-        "within an hour":"thistle"
+        #dusty teal
+        "a few days or more":"#1BA597",
+        "within a day":"#AEE78D",
+        "within a few hours":"#F4F39B",
+        "within an hour":"#F3CE88"
     }
 
     
@@ -563,53 +564,13 @@ def graph_bar_hosts_time_overall(df):
             color= lista7
         ))])
 
-    fig.update_layout(title="Distribucion tiempo de respuesta para host y superhost", 
-                      font_size=20,font_color="white",paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                      height=800,width=2200)
+    # fig.update_layout(title="Distribucion tiempo de respuesta para host y superhost", 
+    #                   font_size=20,font_color="white",paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+    #                   height=800,width=2200)
+    
+    fig.update_layout(height=750,width=2200,paper_bgcolor='rgba(0,0,0,0)', title = dict(text="<b>Distribución tiempo de respuesta para host y superhost<b>", x=0.5,y=0.95,font=dict(size=17,color='white')), plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=17))    
 
 
-    return fig
-
-
-
-def graph_bar_hosts(df):
-    colors = {
-    "t": ["gold","Superhost"],
-    "f": ["lightgray", "No Superhost"]
-    }
-
-    fig = go.Figure()
-    level_count = pd.DataFrame(df.groupby("host_response_time")["host_is_superhost"].value_counts()).rename(columns = {"host_is_superhost": "count"}).reset_index()
-    group_count = pd.DataFrame(level_count.groupby(["host_response_time"])["count"].sum()).reset_index()
-    level_count=level_count.merge(group_count, on='host_response_time', how='left').rename(columns = {"count_x": "count","count_y": "total"})
-    level_count
-
-    # ordenar valores para que los segmentos aparezcan en orden
-    def sortfunc(seg):
-        if seg in ("within an hour", "within a few hours"):
-            return "00"+seg
-        elif seg in ("within a day"):
-            return "0"+seg
-        else:
-            return seg
-
-    level_count = level_count.sort_values(by="host_response_time", key=lambda x: x.apply(sortfunc))
-
-    for key in colors.keys():
-        aux = level_count[level_count["host_is_superhost"] == key]
-        fig.add_trace(
-            go.Bar(
-                x = aux["host_response_time"],
-                y = 100*aux["count"]/aux["total"],
-                name = colors[key][1],
-                marker_color = colors[key][0],
-                width= np.repeat(0.65,len(level_count))
-            )
-        )
-        
-    fig.update_layout(title = dict(text="<b>Distribución de superhosts agrupados por tiempo de respuesta, en números relativos<b>",x=0.5,y=0.90, font=dict(size=17)),
-                    xaxis_title = "Tiempo de respuesta", yaxis_title = "Número relativo de hosts (%)", 
-                    barmode='stack', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15), height=500,width=2200,)
 
     return fig
 
@@ -936,9 +897,11 @@ def pintarPlotAlgunosListings():
     #ListingDiffSemanaFinde[ListingDiffSemanaFinde["listing_id"]]
 
     fig = px.line(data_frame=ListingDiffSemanaFinde[(ListingDiffSemanaFinde["listing_id"].isin(listaCambiantes))], x='date', y='priceNum', color='listing_id')
-    fig.update_layout(height=500,width=2200,paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',margin=dict(t=0,b=0,l=0,r=0),font = dict(color = 'white', size=20),
-                      #autosize = False
-                      )
+    # fig.update_layout(height=500,width=2200,paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',margin=dict(t=0,b=0,l=0,r=0),font = dict(color = 'white', size=20),
+    #                   #autosize = False
+    #                   )
+    fig.update_layout(height=500,width=2200,paper_bgcolor='rgba(0,0,0,0)', legend= dict(title="ID Airbnb"), xaxis_title = "", yaxis_title="Precio por noche ($)", title = dict(text="<b>Demostración de patrones de evolución del precio de algunos Airbnbs<b>", x=0.5,y=0.95,font=dict(size=17,color='white')), plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15))    
+
     return fig
 
 def pintarIncrementoPrecio():
@@ -1031,7 +994,7 @@ tab_descriptive_content = dbc.Card(
             dbc.Row([
                 dbc.Col(
                     [
-                        dcc.Graph(id="pie-property-type",style={'width': '100%', 'height': '100%'}),
+                        dcc.Graph(id="pie-property-type",style={'width': '100%', 'height': '90%'}),
                     ],
                     width=4,
                     style={"height": "100%"},
@@ -1279,13 +1242,11 @@ tab_bonus_content = dbc.Card(
         [
             dbc.Row([
                 dbc.Col([
-                    dbc.Label("Demostracion de patrones de la evolucion del precio de algunos AirBnBs", width=10, html_for="input-address", style={"fontSize":"150%", "text-align": "center", "color":"lightgrey"}),
                     dcc.Graph(id="Calendar-Algunos-AirBnBs",style={'width': '100%', 'height': '100%'},figure=pintarPlotAlgunosListings()),
                 ])
             ]),
             dbc.Row([
                 dbc.Col([
-                    dbc.Label("Incremento (%) de precio en el fin de semana", width=10, html_for="input-address", style={"fontSize":"150%", "text-align": "center", "color":"lightgrey"}),
                     dcc.Graph(id="Calendar-weekendIncrease",style={'width': '100%', 'height': '100%'},figure=pintarIncrementoPrecio()),
                 ])
             ])
@@ -1293,9 +1254,6 @@ tab_bonus_content = dbc.Card(
     ),
     className="mt-3",
 )
-
-
-
 
 #################################################################################################################################################################################################
 ####################################################################################### DASH APP ################################################################################################
@@ -1347,7 +1305,7 @@ app.layout = dbc.Container(
                 html.Img(src=returnImage('\Images\AirBnB\logoBlanco.png'),
                     style={
                         #"display":"inline-block",
-                        "width":"20%",
+                        "width":"25%",
                         "vertical-align": "center",
                         "padding-right":"1%"
                     }
@@ -1366,14 +1324,14 @@ app.layout = dbc.Container(
                     }
                 ),
                 ],
-                width=7,
+                width=12,
             ) 
             ],
 
             id = "Titulo",
             style ={
-                #"align": "right",
-                'display':'inline-block',
+                "align": "right",
+                #'display':'inline-block',
                 "padding-top":"1%",
                 "width":"100%",
                 "height":"10%",
@@ -1513,8 +1471,8 @@ app.layout = dbc.Container(
                                 dbc.Tab(label="Occupancy rates", tab_id="occupancy-rate"),
                                 dbc.Tab(label="Descriptivo", tab_id="descriptive"),
                                 dbc.Tab(label="Hosts", tab_id="hosts"),
-                                dbc.Tab(label="Predicción de precios", tab_id="model_prediction"),
                                 dbc.Tab(label="Criminalidad", tab_id="criminality"),
+                                dbc.Tab(label="Predicción de precios", tab_id="model_prediction"),                               
                                 dbc.Tab(label="Variación de precios", tab_id="bonus")     
                             ],
                             id="tabs",
@@ -1691,37 +1649,7 @@ def update_bar_hosts_time_overall(rentabilidad,barrio,precio,checkFiltros):
     else:
         return graph_bar_hosts_time_overall(listings_filtered_df)
     
-    
-# @app.callback(
-#     Output('bar-hosts', 'figure'),
-#     Input('range-slider-rentabilidad', 'value'),
-#     Input('barrios-seleccion', 'value'),
-#     Input('range-slider-precio', 'value'),
-#     Input('switches-input', 'value'),
-# )
-# def update_bar_hosts(rentabilidad,barrio,precio,checkFiltros):
-#     """
-#     Args:
-#         rentabilidad (array-float): _description_
-#         barrio (str): Barrio o Todo
-#         precio (float): _description_
-#         checkFiltros (int): _description_
-    
-#     Return:
-#         grpah_updated (figure): gráfico actualizado
 
-#     """
-#     if checkFiltros:
-#         #filtramos el df
-#         df_filtered = filtrarDF(rentabilidad[0],rentabilidad[1],barrio,precio[0],precio[1])
-
-#         return graph_bar_hosts(df_filtered)
-    
-#     else:
-#         return graph_bar_hosts(listings_filtered_df)
-
-
-# callback para actualizar pie chart
 @app.callback(
     Output('pie-property-type', 'figure'),
     Input('range-slider-rentabilidad', 'value'),
@@ -1879,76 +1807,6 @@ def update_predicted_price(direccion,barrio,accommodates,beds,baths,amenities,bu
                     ),0]
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-""" 
-@app.callback(
-    Output("tab-content", "children"),
-    [Input("tabs", "active_tab"), Input("store", "data")],
-)
-def render_tab_content(active_tab, data):
-    '''
-    This callback takes the 'active_tab' property as input, as well as the
-    stored graphs, and renders the tab content depending on what the value of
-    'active_tab' is.
-    '''
-    if active_tab and data is not None:
-        if active_tab == "profitability":
-            return dcc.Graph(figure=fig)
-        elif active_tab == "descriptive":
-            return dbc.Row(
-                [
-                    dbc.Col(dcc.Graph(figure=fig), width=6),
-                    dbc.Col(dcc.Graph(figure=fig), width=6),
-                ]
-            )
-    return fig
- """
-""" @app.callback(Output("store", "data"),[Input("button"),Input("n_clicks")])
-def generate_graphs(n):
-    '''
-    This callback generates three simple graphs from random data.
-    '''
-    if not n:
-        # generate empty graphs when app loads
-        return fig
-
-    # simulate expensive graph generation process
-    #time.sleep(2)
-
-    # generate 100 multivariate normal samples
-    data = np.random.multivariate_normal([0, 0], [[1, 0.5], [0.5, 1]], 100)
-
-    scatter = go.Figure(
-        data=[go.Scatter(x=data[:, 0], y=data[:, 1], mode="markers")]
-    )
-    hist_1 = go.Figure(data=[go.Histogram(x=data[:, 0])])
-    hist_2 = go.Figure(data=[go.Histogram(x=data[:, 1])]) 
-
-    # save figures in a dictionary for sending to the dcc.Store
-    return fig
- """
 
 if __name__ == "__main__":
     app.run_server(debug=True, port=8888)
