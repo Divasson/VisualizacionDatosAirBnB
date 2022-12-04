@@ -493,8 +493,6 @@ def graph_subplot_criminality(df):
 
 def graph_bar_hosts_time_overall(df):
     
-    
-    
     diccionarioColoresTiempo={
         #dusty teal
         "a few days or more":"#1BA597",
