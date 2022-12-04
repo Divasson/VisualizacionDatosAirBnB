@@ -70,7 +70,7 @@ hosts_df = mymodule.leerFicheroHosts()
 opcionesGlobales = mymodule.opcionesGlobales()
 
 # load ML model
-rf_model = pickle.load(open(str(os.getcwd())+str("\\modelling\\random_forest_model_tunned.pickle"), 'rb'))
+rf_model = pickle.load(open(str(os.getcwd())+str("\\modelling\\LightGBM_model_tunned.pickle"), 'rb'))
 
 ListingDiffSemanaFinde = pd.read_parquet((str(os.getcwd())+"\\Data\\total data\\modified data\\calendario.parquet"))
 ListingDiffSemanaFindePlotear = pd.read_parquet((str(os.getcwd())+"\\Data\\total data\\modified data\\paraPlotearCalendario.parquet"))
