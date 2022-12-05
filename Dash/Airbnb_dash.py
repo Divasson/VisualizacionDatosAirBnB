@@ -1,30 +1,3 @@
-
-## *: Importante: Belen es espectacular
-
-# REVISAR
-## margenes y ajuste de pagina a todas las pantallas
-
-# TODO NACHO
-## - Zoom y centrado plot
-## - direcciones con lat y long
-## - guardar fichero final con dummies
-## - crear araña dummies
-
-# TODO BELEN
-## - descriptivo: pie chart tipo de propiedad,arañas, 
-
-## PESTAÑAS
-# - rentabilidad: mapas rentabilidad
-# - occupancy rate: mapas occupancy rate
-# - precios: mapas precios + distribucion por barrio (histograma)
-# - revenue: mapas revenue por barrio
-# - hosts: time response w/superhost + tabla
-# - criminalidad: mapas
-# - descriptivo: arañas
-# - prediccion de precios: modelo
-# - bonus
-
-
 # Importamos las librerias mínimas necesarinoatasdas
 import importlib.machinery
 import importlib.util
@@ -92,7 +65,7 @@ def returnImage(direccion):
 
 
 def graph_rentabilidad_distritos(df):
-    """_summary_
+    """Pinta la rentabilidad por distritos
 
     Args:
         df (DataFrame): _description_
@@ -124,8 +97,8 @@ def graph_rentabilidad_distritos(df):
     
     return figuraRentabilidadDistritos
 
-def graph_rentabilidad_barrios(df):
-    """_summary_
+def graph_rentabilidad_barrios(df): # no se utiliza
+    """Pinta la rentabilidad por barrios
 
     Args:
         df (DataFrame): _description_
@@ -158,7 +131,7 @@ def graph_rentabilidad_barrios(df):
     return figuraRentabilidadBarrios
 
 def graph_precio_distritos(df):
-    """_summary_
+    """Pinta el precio por distritos
 
     Args:
         df (DataFrame): _description_
@@ -190,8 +163,8 @@ def graph_precio_distritos(df):
     
     return figuraPrecioDistritos
 
-def graph_precio_barrios(df):
-    """_summary_
+def graph_precio_barrios(df): # no se utiliza
+    """Pinta el precio por barrios
 
     Args:
         df (DataFrame): _description_
@@ -227,11 +200,11 @@ def filtrarDF(rentabilidadMin,rentabilidadMax,barrio,precioMin,precioMax):
     """Devuelve DF filtrado con los posibles filtros existentes
 
     Args:
-        rentabilidadMin (float): _description_
-        rentabilidadMax (float): _description_
+        rentabilidadMin (float): filtro de rentabilidad min
+        rentabilidadMax (float): filtro de rentabilidad max
         barrio (str): Barrio o Todo
-        precioMin (float): _description_
-        precioMax (float): _description_
+        precioMin (float): filtro de precio min
+        precioMax (float): filtro de precio max
 
     Returns:
         DF: DF filtrado
@@ -253,6 +226,15 @@ def filtrarDF(rentabilidadMin,rentabilidadMax,barrio,precioMin,precioMax):
     return z 
 
 def graph_subplot_rentabilidad(df,barrio):
+    """Pinta la rentabilidad en función de filtros
+
+    Args:
+        df (DataFrame): dataframe filtrado
+        barrio (str): barrio seleccionado
+
+    Returns:
+        fig: figura a representar
+    """
     fig = make_subplots(
         rows = 1,
         cols = 2,
@@ -380,6 +362,15 @@ def graph_histogram_prices(df):
     return fig
 
 def graph_subplot_occupancy_rates(df,barrio):
+    """Pinta el grafico de ratio de ocupación filtrado
+
+    Args:
+        df (DataFrame): dataframe filtrado
+        barrio (str): barrio seleccionado
+
+    Returns:
+        fig: figura a representar
+    """
     fig = make_subplots(
         rows = 1,
         cols = 2,
@@ -428,6 +419,14 @@ def graph_subplot_occupancy_rates(df,barrio):
     return fig
 
 def graph_subplot_criminality(df):
+    """Pinta el grafico inmutable de criminalidad
+
+    Args:
+        df (DataFrame): dataframe previamente tratado
+
+    Returns:
+        fig: figura a representar
+    """
     GranTitulo = "Crimenes en NYC"
     title = "<i>No se aplican filtros a estas visualizaciones<i>"
     nombreBarra = "# crímenes"
@@ -492,6 +491,14 @@ def graph_subplot_criminality(df):
     return fig
 
 def graph_bar_hosts_time_overall(df):
+    """Pintar el tiempo de respuesta de los hosts
+
+    Args:
+        df (DataFrame): DataFrame filtrado
+
+    Returns:
+        fig: figura a representar
+    """
     
     diccionarioColoresTiempo={
         #dusty teal
@@ -562,10 +569,6 @@ def graph_bar_hosts_time_overall(df):
             color= lista7
         ))])
 
-    # fig.update_layout(title="Distribucion tiempo de respuesta para host y superhost", 
-    #                   font_size=20,font_color="white",paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-    #                   height=800,width=2200)
-    
     fig.update_layout(height=750,width=2200,paper_bgcolor='rgba(0,0,0,0)', title = dict(text="<b>Distribución tiempo de respuesta para host y superhost<b>", x=0.5,y=0.95,font=dict(size=17,color='white')), plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=17))    
 
 
@@ -573,6 +576,14 @@ def graph_bar_hosts_time_overall(df):
     return fig
 
 def graph_table_hosts(df):
+    """Pinta la tabla de hosts
+
+    Args:
+        df (DataFrame): dataframe entero
+
+    Returns:
+        fig: figura a representar
+    """
     filtered_data = df.nlargest(10, 'Total de Airbnbs')
     filtered_data = filtered_data.drop(["ID host","Nombre host"],axis=1)
     column_host = ["Host 1", "Host 2", "Host 3", "Host 4", "Host 5", "Host 6", "Host 7", "Host 8", "Host 9", "Host 10"]
@@ -592,7 +603,6 @@ def graph_table_hosts(df):
             cells=dict(
                 values= [filtered_data[k].tolist() for k in filtered_data.columns],
                 align = ['center'],
-                #fill=dict(color=['paleturquoise', 'white']),
                 font=dict(size=16, color="#4D5656"),
                 height=30
             )
@@ -606,6 +616,14 @@ def graph_table_hosts(df):
     return fig
 
 def graph_pie_property_type(df):
+    """Pinta la grafica de tarta con tipos de casas
+
+    Args:
+        df (DataFrame): DataFrame filtrado
+
+    Returns:
+        fig: figura a representar
+    """
     tiposDeListing = ["Entire rental unit", "Private room in rental unit", "Private room in home", "Entire condo", "Entire home"]
     fig = px.pie(data_frame=df[df['property_type'].isin(tiposDeListing)].groupby("property_type",as_index=False).count(), 
              values="id",names="property_type", color = "property_type",color_discrete_sequence = px.colors.sequential.YlGnBu,
@@ -615,6 +633,15 @@ def graph_pie_property_type(df):
     return fig
 
 def graph_spider_features(df,barrio):
+    """Pinta el grafico de araña de los AirBnBs
+
+    Args:
+        df (DataFrame): dataframe filtrado
+        barrio (str): barrio seleccionado
+
+    Returns:
+        fig: figura a representar
+    """
     colorsBarrios = {
             "Brooklyn": "#1f77b4",
             "Bronx": "#ff7f0e",
@@ -687,6 +714,14 @@ def graph_spider_features(df,barrio):
     return fig
 
 def graph_spider_features_normalized(df):    
+    """Pinta el grafico de spider normalizado
+
+    Args:
+        df (DataFrame): DataFrame inmutable
+
+    Returns:
+        fig: figura a representar
+    """
     colorsBarrios = {
             "Brooklyn": "#1f77b4",
             "Bronx": "#ff7f0e",
@@ -746,6 +781,14 @@ def graph_spider_features_normalized(df):
     return fig
 
 def graph_bar_amenities(df):
+    """Grafico de barras con el porcentaje de ammenities
+
+    Args:
+        df (DataFrame): dataframe a representar
+
+    Returns:
+        fig: figura a representar
+    """
 
     total_neighbourhood = df.groupby("neighbourhood_group_cleansed").agg({"id":"count"}).reset_index()
     total_neighbourhood = total_neighbourhood.rename({"id":"total"},axis=1)
@@ -774,8 +817,25 @@ def graph_bar_amenities(df):
     return fig 
 
 def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
+    """Predice el precio en función de las cosas metidas por el usuario
+
+    Args:
+        barrio (str): barrio del supuesto AirBnB
+        lat (float): latitud del supuesto AirBnB
+        lon (float): longitud del supuesto AirBnB
+        acco (int): Numero de acomodados en en supuesto AirBnB
+        bed (int): Numero de camas en el supuesto AirBnB
+        bath (int): Numero de baños en el supuesto AirBnB
+        wifi (int): Tiene wifi el supuesto AirBnB?
+        kitchen (int): Tiene cocina el supuesto AirBnB?
+        dryer (int): Tiene secador el supuesto AirBnB?
+        heating (int): Tiene calentador el supuesto AirBnB?
+        tv (int): Tiene televisión el supuesto AirBnB?
+
+    Returns:
+        float: precio predicho
+    """
     
-    #print(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv)
 
     latitude = float(lat),
     longitude = float(lon),
@@ -831,7 +891,7 @@ def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
         neighbourhood_group_cleansed_Queens = 0
         neighbourhood_group_cleansed_Staten_Island = 0
 
-    #print(neighbourhood_group_cleansed_Manhattan, neighbourhood_group_cleansed_Brooklyn , neighbourhood_group_cleansed_Bronx , neighbourhood_group_cleansed_Queens, neighbourhood_group_cleansed_Staten_Island)
+    
     data = [latitude[0], longitude[0], accommodates[0], beds[0], baths[0],
                                         has_wifi[0], has_dryer[0], has_heating[0], has_kitchen[0], has_tv[0],
                                         neighbourhood_group_cleansed_Bronx,
@@ -846,17 +906,21 @@ def predictPrice(barrio,lat,lon,acco,bed,bath,wifi,kitchen,dryer,heating,tv):
                                     'neighbourhood_group_cleansed_Manhattan',
                                     'neighbourhood_group_cleansed_Queens',
                                     'neighbourhood_group_cleansed_Staten Island']
-    # print(data)    
-    # print(columns)
+
     data_model = pd.DataFrame(data=[data], columns = columns)
-    #print(data_model)
-    #data_model.append(data)
-    #print(data_model)
     prediction = rf_model.predict(data_model)
-    #print(prediction)
     return prediction
 
 def getLatLong(address,barrio):
+    """Devuelve la latitud y longitud del supuesto AirBnB
+
+    Args:
+        address (str): dirección del supuesto AirBnB
+        barrio (str): barrio del supuesto AirBnB
+
+    Returns:
+        (float,float): latitud y longitud
+    """
     print("Buscando Lat Lon")
     locator =  geopy.geocoders.Nominatim(user_agent="my_geocoder")
     # #####location = locator.geocode("122 E 19th St,Manhattan,New York,USA")
@@ -868,6 +932,16 @@ def getLatLong(address,barrio):
     return [lat,lon]
         
 def pintarDireccionMetida(lat,lon,direccion):
+    """Pinta el minimapa de la dirección metida
+
+    Args:
+        lat (float): latitud
+        lon (float): longitud
+        direccion (str): dirección del supuesto airbnb
+
+    Returns:
+        fig: figura a representar
+    """
     fig = go.Figure()
     
     fig.add_trace(go.Scattermapbox(
@@ -883,26 +957,29 @@ def pintarDireccionMetida(lat,lon,direccion):
     ))
     fig.update_layout(mapbox=dict(style='carto-positron',center={"lat": lat, "lon": lon},zoom=14))
     fig.update_layout(height=500,paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',margin=dict(t=0,b=0,l=0,r=0))
-    #fig.show()
     return fig
 
 def pintarPlotAlgunosListings():
+    """Pinta la evolución del precio de algunos airbnbs ya seleccionados
+
+    Returns:
+        fig: figura a representar
+    """
     
     listaCambiantes = [16595,16821,13808,14290,23135,29683,2595,39282,23686,53469,57297,53470,59121]
     
     
-    #ListingDiffSemanaFinde = pd.read_parquet("../Data/total data/modified data/calendario.parquet")
-    #ListingDiffSemanaFinde[ListingDiffSemanaFinde["listing_id"]]
-
     fig = px.line(data_frame=ListingDiffSemanaFinde[(ListingDiffSemanaFinde["listing_id"].isin(listaCambiantes))], x='date', y='priceNum', color='listing_id')
-    # fig.update_layout(height=500,width=2200,paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',margin=dict(t=0,b=0,l=0,r=0),font = dict(color = 'white', size=20),
-    #                   #autosize = False
-    #                   )
     fig.update_layout(height=500,width=2200,paper_bgcolor='rgba(0,0,0,0)', legend= dict(title="ID Airbnb"), xaxis_title = "", yaxis_title="Precio por noche ($)", title = dict(text="<b>Demostración de patrones de evolución del precio de algunos Airbnbs<b>", x=0.5,y=0.95,font=dict(size=17,color='white')), plot_bgcolor='rgba(0,0,0,0)', font = dict(color = 'white', size=15))    
 
     return fig
 
 def pintarIncrementoPrecio():
+    """Pinta el incremento de precio medio
+
+    Returns:
+        fig: figura a representar
+    """
     
     fig = make_subplots(
         rows = 1,
@@ -1013,9 +1090,6 @@ tab_descriptive_content = dbc.Card(
                 width=4,
                 style={"height": "100%"},),
 
-                #dcc.Graph(id="pie-property-type",style={'width': '100%', 'height': '100%'}),
-                #dcc.Graph(id="spider-features",style={'width': '100%', 'height': '100%'})
-
             ], justify="center",style={"height": "50%"}),  
 
             dbc.Row([
@@ -1036,7 +1110,6 @@ tab_descriptive_content = dbc.Card(
 tab_hosts_content = dbc.Card(
     dbc.CardBody([
         dcc.Graph(id="bar-hosts-time-overall",style={'width': '100%', 'height': '100%'}),
-        #dcc.Graph(id="bar-hosts",style={'width': '100%', 'height': '100%'}),
         dcc.Graph(id="table-hosts", figure=graph_table_hosts(hosts_df), style={'width': '100%', 'height': '100%'})        
     ]),
 )
@@ -1049,19 +1122,15 @@ tab_model_prediction_content = dbc.Card(
                             style={
                                 "text-align": "center",
                                 "color":"lightgrey",
-                                #"padding-bottom":"2%"
                             },
                         ),
 
                     html.Hr()
                 ]
             ),
-
             html.Br(),
-
             dbc.Row(
                 [
-
                     dbc.Col([
                         dbc.Label("Dirección", width=10, html_for="input-address", style={"fontSize":"150%", "text-align": "center", "color":"lightgrey"}),
                         dbc.Input(
@@ -1073,9 +1142,7 @@ tab_model_prediction_content = dbc.Card(
                             "height":"100%"
                         }
                     ),
-                    
-
-                    
+              
                     dbc.Col([
                         dbc.Label("Barrio", width=10, html_for="input-barrio", style={"fontSize":"150%","text-align": "center","color":"lightgrey"}),
                         dcc.Dropdown(id="input-barrio",
@@ -1087,7 +1154,6 @@ tab_model_prediction_content = dbc.Card(
                                         "Bronx"
                                     ],
                                     placeholder="Introduzca el barrio",
-                                    #value="Manhattan",
                                     style={
                                         "display":"inline-block",
                                         "width":"80%",
@@ -1097,23 +1163,12 @@ tab_model_prediction_content = dbc.Card(
                         )],
                         width=4,
                     ),
-
-                    
-                    # dbc.Col([
-                    #     dbc.Label("Longitud", width=10, html_for="input-longitude", style={"fontSize":"150%", "text-align": "center", "color":"lightgrey"}),
-                    #     dbc.Input(
-                    #         id="input-longitude", placeholder="Introduzca la longitud del Airbnb", type="number"
-                    #     )],
-                    #     width=2,
-                    # ),
                 ],
                 justify="center",
-                
             ),
 
             html.Br(),
             html.Br(),
-
             dbc.Row(
                 [
                     dbc.Col([
@@ -1125,7 +1180,6 @@ tab_model_prediction_content = dbc.Card(
                         align="end",
                     ),
                     
-                    
                     dbc.Col([
 
                         dbc.Label("Nº de camas", width=10, html_for="input-beds", style={"fontSize":"150%","text-align": "center","color":"lightgrey"}),
@@ -1135,7 +1189,6 @@ tab_model_prediction_content = dbc.Card(
                         width=2,
                         align="end",
                     ),
-
                     
                     dbc.Col([
                         dbc.Label("Nº de baños", width=10, html_for="input-baths", style={"fontSize":"150%", "text-align": "center", "color":"lightgrey"}),
@@ -1146,13 +1199,11 @@ tab_model_prediction_content = dbc.Card(
                         align="end",
                     ),
                 ],
-
                 justify="center",
             ),
 
             html.Br(),
             html.Br(),
-
             dbc.Row(
                 [
                     dbc.Col([
@@ -1173,13 +1224,10 @@ tab_model_prediction_content = dbc.Card(
                             },
                             input_checked_style={
                                 "background-color":"#bada55"
-                                
                             },
                             labelStyle = dict(display='block', align="center")
                         ),  
-
                         html.Br()
-
                     ],
                     width=2,
                     align="center",
@@ -1190,7 +1238,6 @@ tab_model_prediction_content = dbc.Card(
 
             html.Br(),
             html.Br(),
-
             dbc.Row(
                 [
                     dbc.Col(
@@ -1510,6 +1557,14 @@ app.layout = dbc.Container(
     Output("tabs-content", "children"), 
     Input("tabs", "active_tab"))
 def switch_tab(tab):
+    """Cambia de pestaña
+
+    Args:
+        tab (str): id de la pestaña
+
+    Returns:
+        children: contenido a representar
+    """
     if tab == "profitability":
         return tab_profitability_content
     elif tab == "prices":
@@ -1540,10 +1595,10 @@ def switch_tab(tab):
 def update_subplot_rentabilidad(rentabilidad,barrio,precio,checkFiltros):
     """
     Args:
-        rentabilidad (array-float): _description_
+        rentabilidad (array float): rentabilidad minima y maxima
         barrio (str): Barrio o Todo
-        precio (float): _description_
-        checkFiltros (int): _description_
+        precio (array float): precio maximo y minimo
+        checkFiltros (int): filtros activos?
     
     Return:
         grpah_updated (figure): gráfico actualizado
@@ -1571,10 +1626,10 @@ def update_subplot_rentabilidad(rentabilidad,barrio,precio,checkFiltros):
 def update_plots_prices(rentabilidad,barrio,precio,checkFiltros):
     """
     Args:
-        rentabilidad (array-float): _description_
+        rentabilidad (array float): rentabilidad minima y maxima
         barrio (str): Barrio o Todo
-        precio (float): _description_
-        checkFiltros (int): _description_
+        precio (array float): precio maximo y minimo
+        checkFiltros (int): filtros activos?
     
     Return:
         grpah_updated (figure): gráfico actualizado
@@ -1600,10 +1655,10 @@ def update_plots_prices(rentabilidad,barrio,precio,checkFiltros):
 def update_subplot_occupancy_rate(rentabilidad,barrio,precio,checkFiltros):
     """
     Args:
-        rentabilidad (array-float): _description_
+        rentabilidad (array float): rentabilidad minima y maxima
         barrio (str): Barrio o Todo
-        precio (float): _description_
-        checkFiltros (int): _description_
+        precio (array float): precio maximo y minimo
+        checkFiltros (int): filtros activos?
     
     Return:
         grpah_updated (figure): gráfico actualizado
@@ -1629,10 +1684,10 @@ def update_subplot_occupancy_rate(rentabilidad,barrio,precio,checkFiltros):
 def update_bar_hosts_time_overall(rentabilidad,barrio,precio,checkFiltros):
     """
     Args:
-        rentabilidad (array-float): _description_
+        rentabilidad (array float): rentabilidad minima y maxima
         barrio (str): Barrio o Todo
-        precio (float): _description_
-        checkFiltros (int): _description_
+        precio (array float): precio maximo y minimo
+        checkFiltros (int): filtros activos?
     
     Return:
         grpah_updated (figure): gráfico actualizado
@@ -1658,10 +1713,10 @@ def update_bar_hosts_time_overall(rentabilidad,barrio,precio,checkFiltros):
 def update_pie_chart(rentabilidad,barrio,precio,checkFiltros):
     """
     Args:
-        rentabilidad (array-float): _description_
+        rentabilidad (array float): rentabilidad minima y maxima
         barrio (str): Barrio o Todo
-        precio (float): _description_
-        checkFiltros (int): _description_
+        precio (array float): precio maximo y minimo
+        checkFiltros (int): filtros activos?
     
     Return:
         grpah_updated (figure): gráfico actualizado
@@ -1687,10 +1742,10 @@ def update_pie_chart(rentabilidad,barrio,precio,checkFiltros):
 def update_spider_feature(rentabilidad,barrio,precio,checkFiltros):
     """
     Args:
-        rentabilidad (array-float): _description_
+        rentabilidad (array float): rentabilidad minima y maxima
         barrio (str): Barrio o Todo
-        precio (float): _description_
-        checkFiltros (int): _description_
+        precio (array float): precio maximo y minimo
+        checkFiltros (int): filtros activos?
     
     Return:
         grpah_updated (figure): gráfico actualizado
@@ -1720,16 +1775,16 @@ def update_spider_feature(rentabilidad,barrio,precio,checkFiltros):
 def update_predicted_price(direccion,barrio,accommodates,beds,baths,amenities,button):
     """
     Args:
-        direccion (str): _description_
-        barrio (str): _description_
-        accommodates (float): _description_
-        beds (float): _description_
-        baths (float): _description_
-        amenities (arr str): _description_
-        button (int): _description_
+        direccion (str): dirección del supuesto AirBnB
+        barrio (str): barrio del supuesto AirBnB
+        accommodates (float): numero de acomodados del supuesto AirBnB
+        beds (float): numero de camas del supuesto AirBnB
+        baths (float): numero de baños del supuesto AirBnb
+        amenities (arr str): array de ammenities del supuesto AirBnB
+        button (int): predecir?
     
     Return:
-        children: 
+        children: precio + mapa
 
     """
 
