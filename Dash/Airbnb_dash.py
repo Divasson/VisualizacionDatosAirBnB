@@ -54,7 +54,7 @@ import pickle
 
 # Get path to mymodule. Credits to = https://csatlas.com/python-import-file-module/
 script_dir = Path( __file__ ).parent.parent
-mymodule_path = str( script_dir.joinpath( '..', 'Utilities', 'leer', 'readFileFinal_y_Geos.py' ) )
+mymodule_path = str( script_dir.joinpath('Utilities', 'leer', 'readFileFinal_y_Geos.py' ) )
 
 # Import mymodule
 loader = importlib.machinery.SourceFileLoader( 'readFileFinal_y_Geos.py', mymodule_path )
